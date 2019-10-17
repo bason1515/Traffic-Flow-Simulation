@@ -1,4 +1,5 @@
 package model;
+
 import javafx.geometry.Point2D;
 import javafx.scene.shape.Line;
 import lombok.Data;
@@ -7,12 +8,15 @@ import lombok.ToString;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class Road extends Line implements Drivable{
+public class Road extends Line {
     static Long count = 1L;
     @ToString.Exclude
     private final Long roadId;
 
     Point2D direction;
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    Road nextRoad;
 
     public Road(double startX, double startY, double endX, double endY) {
         super(startX, startY, endX, endY);
@@ -38,8 +42,8 @@ public class Road extends Line implements Drivable{
         setEndY(end.getY());
     }
 
-    @Override
     public Point2D getDriveDirection(Point2D position) {
         return direction;
     }
+
 }

@@ -1,8 +1,8 @@
-<?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.Pane?>
 <BorderPane fx:controller="Controllers.Controller"
             xmlns:fx="http://javafx.com/fxml" prefWidth="800" prefHeight="600">
     <center>
-        <Canvas fx:id="canvas" height="800" width="600"/>
+        <Pane fx:id="sim" prefHeight="800" prefWidth="600"/>
     </center>
 </BorderPane>
