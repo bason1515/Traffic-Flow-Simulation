@@ -1,4 +1,4 @@
-package model;
+package model.car;
 
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -7,6 +7,8 @@ import javafx.scene.shape.Rectangle;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import model.Movable;
+import model.road.Road;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -41,7 +43,7 @@ public class Car extends Rectangle implements Movable {
     public void drive() {
         if (currentRoad.getEndPoint2D().distance(position) < 5) {
             // getNewRoad, changeLine, stop, remove
-            Road newRoad = currentRoad.getNextRoad();
+            Road newRoad = null;
             if (newRoad == null) stopCar();
             else {
                 this.setCurrentRoad(newRoad);

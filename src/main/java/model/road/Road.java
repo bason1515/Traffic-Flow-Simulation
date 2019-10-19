@@ -1,4 +1,4 @@
-package model;
+package model.road;
 
 import javafx.geometry.Point2D;
 import javafx.scene.shape.Line;
@@ -6,17 +6,22 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-@EqualsAndHashCode(callSuper = true)
 @Data
 public class Road extends Line {
+    public static final int LINE_OFFSET = 10;
+
     static Long count = 1L;
     @ToString.Exclude
     private final Long roadId;
 
     Point2D direction;
+
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    Road nextRoad;
+    Road left = null;
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    Road right = null;
 
     public Road(double startX, double startY, double endX, double endY) {
         super(startX, startY, endX, endY);

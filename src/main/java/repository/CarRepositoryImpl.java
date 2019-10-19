@@ -1,16 +1,17 @@
 package repository;
 
-import model.Car;
+import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableMap;
+import model.car.Car;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
-public class CarRepositoryImpl implements CarRepository{
-    private Map<Long, Car> cars;
+public class CarRepositoryImpl implements CarRepository {
+    private ObservableMap<Long, Car> cars;
 
-    public CarRepositoryImpl(){
-        cars = new HashMap<>();
+    public CarRepositoryImpl() {
+        cars = FXCollections.observableHashMap();
     }
 
     @Override
@@ -26,5 +27,15 @@ public class CarRepositoryImpl implements CarRepository{
     @Override
     public Collection<Car> getAll() {
         return cars.values();
+    }
+
+    @Override
+    public void addListener(MapChangeListener listener) {
+        cars.addListener(listener);
+    }
+
+    @Override
+    public void removeListener(MapChangeListener listener) {
+        cars.removeListener(listener);
     }
 }

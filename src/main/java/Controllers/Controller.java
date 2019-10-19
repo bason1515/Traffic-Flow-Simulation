@@ -7,8 +7,8 @@ import javafx.beans.property.SimpleLongProperty;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.scene.layout.Pane;
-import model.Car;
-import model.Road;
+import model.car.Car;
+import model.road.Road;
 import repository.CarRepositoryImpl;
 import repository.RoadRepositoryImpl;
 
@@ -26,18 +26,17 @@ public class Controller {
     public void initialize() {
         simServ = new SimulationService(new RoadRepositoryImpl(), new CarRepositoryImpl());
         Road road1 = new Road(100, 100, 200, 200);
-        Road road2 = new Road(200, 200, 350, 180);
-        Road road3 = new Road(350, 180, 100, 100);
-        road1.setNextRoad(road2);
-        road2.setNextRoad(road3);
-        road3.setNextRoad(road1);
+//        Road road2 = new Road(200, 200, 350, 180);
+//        Road road3 = new Road(350, 180, 100, 100);
+//        road2.setNextRoad(road3);
+//        road3.setNextRoad(road1);
         simServ.addRoad(road1);
-        simServ.addRoad(road2);
-        simServ.addRoad(road3);
+        simServ.addLine(road1.getRoadId());
+        simServ.addLine(road1.getRoadId());
         createCars(5).forEach(simServ::addCar);
 
-        sim.getChildren().addAll(simServ.getRoads().getAll());
-        sim.getChildren().addAll(simServ.getCars().getAll());
+        sim.getChildren().addAll(simServ.getRoadRepo().getAll());
+        sim.getChildren().addAll(simServ.getCarRepo().getAll());
 
         startAnimation();
     }
@@ -45,9 +44,9 @@ public class Controller {
     private List<Car> createCars(int num) {
         ThreadLocalRandom rng = ThreadLocalRandom.current();
         ArrayList<Car> result = new ArrayList<>();
-        int size = simServ.getRoads().getAll().size();
+        int size = simServ.getRoadRepo().getAll().size();
         for (int i = 0; i < num; i++) {
-            Car c = new Car(5, 5, simServ.getRoads().byId(rng.nextLong(1, size + 1)));
+            Car c = new Car(5, 5, simServ.getRoadRepo().byId(rng.nextLong(1, size + 1)));
             Road road = c.getCurrentRoad();
             double length = road.getStartPoint2D().subtract(road.getEndPoint2D()).magnitude();
             Point2D pos = road.getDirection().multiply(rng.nextDouble(length)).add(road.getStartPoint2D());
