@@ -22,7 +22,7 @@ public class Car extends Rectangle implements Movable {
     Point2D position = Point2D.ZERO;
     Point2D accel = Point2D.ZERO;
     double maxAccel = 0.05;
-    double maxBreak = 0.1;
+    double maxBreak = -0.1;
     double maxVel = 1;
 
     public Car() {
@@ -42,13 +42,7 @@ public class Car extends Rectangle implements Movable {
 
     public void drive() {
         if (currentRoad.getEndPoint2D().distance(position) < 5) {
-            // getNewRoad, changeLine, stop, remove
-            Road newRoad = null;
-            if (newRoad == null) stopCar();
-            else {
-                this.setCurrentRoad(newRoad);
-                this.putAtTheBegin();
-            }
+            putAtTheBegin();
         } else {
             Point2D force = currentRoad.getDriveDirection(position);
 
@@ -60,7 +54,6 @@ public class Car extends Rectangle implements Movable {
                 velocity = velocity.normalize().multiply(maxVel);
         }
 
-
         position = position.add(velocity);
 //        System.out.println("Car position: " + position);
 
@@ -70,8 +63,7 @@ public class Car extends Rectangle implements Movable {
     }
 
     private void stopCar() {
-        Point2D reversVelo = velocity.multiply(-1);
-        reversVelo = reversVelo.normalize().multiply(maxBreak);
+        Point2D reversVelo = accel.normalize().multiply(maxBreak);
         if (reversVelo.magnitude() > velocity.magnitude()) {
             velocity = Point2D.ZERO;
         } else
