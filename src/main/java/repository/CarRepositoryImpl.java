@@ -30,6 +30,11 @@ public class CarRepositoryImpl implements CarRepository {
     }
 
     @Override
+    public Car byId(Long id) {
+        return cars.get(id);
+    }
+
+    @Override
     public void addListener(MapChangeListener listener) {
         cars.addListener(listener);
     }

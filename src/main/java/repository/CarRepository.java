@@ -13,6 +13,8 @@ public interface CarRepository {
 
     Collection<Car> getAll();
 
+    Car byId(Long id);
+
     void addListener(MapChangeListener listener);
 
     void removeListener(MapChangeListener listener);

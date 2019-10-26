@@ -17,12 +17,13 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Controller {
-    private static final int CAR_NUMBER = 100;
-    private static final double MIN_VELO = 0.6;
-    private static final double MAX_VELO = 1.2;
-    private static final double MIN_ACCE = 0.03;
-    private static final double MAX_ACCE = 0.06;
-    private static final double BREAK_SPEED = -0.1;
+    private static final int CAR_NUMBER = 30;
+    private static final int LINE_NUMBER = 3;
+    private static final double MIN_VELO = 20;
+    private static final double MAX_VELO = 50;
+    private static final double MIN_ACCE = 0.1;
+    private static final double MAX_ACCE = 0.2;
+    private static final double BREAK_SPEED = -0.035;
 
     @FXML
     private Pane sim;
@@ -32,21 +33,29 @@ public class Controller {
     @FXML
     public void initialize() {
         simServ = new SimulationService(new RoadRepositoryImpl(), new CarRepositoryImpl());
-        Road road1 = new Road(50, 50, 900, 900);
-//        Road road2 = new Road(200, 200, 350, 180);
-//        Road road3 = new Road(350, 180, 100, 100);
-//        road2.setNextRoad(road3);
-//        road3.setNextRoad(road1);
+        Road road1 = new Road(50, 50, 800, 800);
         simServ.addRoad(road1);
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < LINE_NUMBER; i++) {
             simServ.addLine(road1.getRoadId());
         }
         createCars(CAR_NUMBER).forEach(simServ::addCar);
 
         sim.getChildren().addAll(simServ.getRoadRepo().getAll());
-        sim.getChildren().addAll(simServ.getCarRepo().getAll());
+        sim.getChildren().addAll(simServ.getCarsView());
 
         startAnimation();
+    }
+
+    private void addMouseScroll(){
+        sim.setOnScroll(event -> {
+            double zoomFactor = 1.05;
+            double deltaY = event.getDeltaY();
+            if (deltaY < 0){
+                zoomFactor = 2.0 - zoomFactor;
+            }
+            sim.setScaleX(sim.getScaleX() * zoomFactor);
+            sim.setScaleY(sim.getScaleY() * zoomFactor);
+        });
     }
 
     private List<Car> createCars(int num) {
@@ -54,15 +63,12 @@ public class Controller {
         ArrayList<Car> result = new ArrayList<>();
         int size = simServ.getRoadRepo().getAll().size();
         for (int i = 0; i < num; i++) {
-            Car c = new Car(5, 5, simServ.getRoadRepo().byId(rng.nextLong(1, size + 1)));
-            c.setMaxVel(rng.nextDouble(MIN_VELO, MAX_VELO));
-            c.setMaxAccel(rng.nextDouble(MIN_ACCE, MAX_ACCE));
-            c.setMaxBreak(BREAK_SPEED);
-
-            Road road = c.getCurrentRoad();
-            double length = road.getStartPoint2D().subtract(road.getEndPoint2D()).magnitude();
-            Point2D pos = road.getDirection().multiply(rng.nextDouble(length)).add(road.getStartPoint2D());
-            c.setPosition(pos);
+            Road randRoad = simServ.getRoadRepo().byId(rng.nextLong(1, size + 1));
+            double length = randRoad.getStartPoint2D().subtract(randRoad.getEndPoint2D()).magnitude();
+            Point2D pos = randRoad.getDirection().multiply(rng.nextDouble(length)).add(randRoad.getStartPoint2D());
+            double randVelo = rng.nextDouble(MIN_VELO, MAX_VELO);
+            double randAccel = rng.nextDouble(MIN_ACCE, MAX_ACCE);
+            Car c = new Car(pos.getX(),pos.getY(),5,15, randRoad, randAccel, BREAK_SPEED, randVelo);
             result.add(c);
         }
         return result;
@@ -76,6 +82,7 @@ public class Controller {
                 if (lastUpdateTime.get() > 0) {
                     long elapsedTime = timestamp - lastUpdateTime.get();
                     simServ.updateCars();
+                    simServ.updateSim(elapsedTime);
                 }
                 lastUpdateTime.set(timestamp);
             }

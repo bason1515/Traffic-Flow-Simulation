@@ -1,99 +1,163 @@
 package model.car;
 
-import javafx.event.Event;
-import javafx.event.EventHandler;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ReadOnlyDoubleWrapper;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Point2D;
 import javafx.scene.shape.Rectangle;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-import model.Movable;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import model.road.Road;
 
-@EqualsAndHashCode(callSuper = true)
-@Data
-public class Car extends Rectangle implements Movable {
-    static Long count = 1L;
-    @ToString.Exclude
+
+@Getter
+@Setter
+public class Car {
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    private static Long count = 1L;
+    @Setter(AccessLevel.NONE)
     private final Long carId;
 
     Road currentRoad;
-    Point2D velocity = Point2D.ZERO;
-    Point2D position = Point2D.ZERO;
-    Point2D accel = Point2D.ZERO;
-    double maxAccel = 0.05;
-    double maxBreak = -0.1;
-    double maxVel = 1;
+    //    Properties
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    private DoubleProperty x, y, xVelocity, yVelocity;
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    private final ReadOnlyDoubleWrapper speed;
+//    private final ReadOnlyDoubleWrapper front; // angle
 
-    public Car() {
-        super();
+    //    Limitation
+    private double maxAccel;
+    private double maxBreak;
+    private double maxVel;
+    //    View
+    private boolean transition;
+    private Rectangle view;
+
+    public Car(double x, double y, double width, double height, Road currentRoad, double maxAccel, double maxBreak, double maxVel) {
         carId = count++;
+        this.maxAccel = maxAccel;
+        this.maxBreak = maxBreak;
+        this.maxVel = maxVel;
+        this.currentRoad = currentRoad;
+        this.view = new Rectangle(x, y, width, height);
+        this.x = new SimpleDoubleProperty(this, "x", x);
+        this.y = new SimpleDoubleProperty(this, "y", y);
+        this.xVelocity = new SimpleDoubleProperty(this, "xVelocity", 0);
+        this.yVelocity = new SimpleDoubleProperty(this, "yVelocity", 0);
+        this.speed = new ReadOnlyDoubleWrapper(this, "speed");
+
+//        Bindings
+        speed.bind(Bindings.createDoubleBinding(() -> this.getVelocity().magnitude(), this.xVelocity, this.yVelocity));
+        view.xProperty().bind(Bindings.createDoubleBinding(() -> getX() - view.getWidth() / 2, this.x));
+        view.yProperty().bind(Bindings.createDoubleBinding(() -> getY() - view.getHeight() / 2, this.y));
+        view.rotateProperty().bind(Bindings.createDoubleBinding(() -> {
+            Point2D direction = this.getVelocity();
+            if (direction.equals(Point2D.ZERO)) direction = currentRoad.getDirection();
+            if (getxVelocity() < 0)
+                return direction.angle(0, 1) + 180.0;
+            return direction.angle(0, -1);
+        }, this.xVelocity, this.yVelocity));
     }
 
-    public Car(double width, double height, Road road) {
-        super(width, height);
-        carId = count++;
-        currentRoad = road;
-        setX(road.getStartX());
-        setY(road.getStartY());
-        position = new Point2D(getX(), getY());
-        setOnMouseEntered(new HoverListener());
+//    Getters Setters
+
+    public Point2D getPosition() {
+        return new Point2D(this.getX(), this.getY());
     }
 
-    public void drive() {
-        if (currentRoad.getEndPoint2D().distance(position) < 5) {
-            putAtTheBegin();
-        } else {
-            Point2D force = currentRoad.getDriveDirection(position);
-
-            accel = accel.add(force);
-            accel = accel.normalize().multiply(maxAccel);
-
-            velocity = velocity.add(accel);
-            if (velocity.magnitude() >= maxVel)
-                velocity = velocity.normalize().multiply(maxVel);
-        }
-
-        position = position.add(velocity);
-//        System.out.println("Car position: " + position);
-
-        // Update View
-        setX(position.getX());
-        setY(position.getY());
+    public void setPosition(Point2D position) {
+        this.setX(position.getX());
+        this.setY(position.getY());
     }
 
-    private void stopCar() {
-        Point2D reversVelo = accel.normalize().multiply(maxBreak);
-        if (reversVelo.magnitude() > velocity.magnitude()) {
-            velocity = Point2D.ZERO;
-        } else
-            velocity = velocity.add(reversVelo);
+    public Point2D getVelocity() {
+        return new Point2D(this.getxVelocity(), this.getyVelocity());
     }
 
-    public void putAtTheBegin() {
-        setVelocity(Point2D.ZERO);
-        setAccel(Point2D.ZERO);
-        position = currentRoad.getStartPoint2D();
+    public void setVelocity(Point2D position) {
+        this.setxVelocity(position.getX());
+        this.setyVelocity(position.getY());
     }
 
-    class HoverListener implements EventHandler {
-
-        @Override
-        public void handle(Event event) {
-            displayInfo();
-        }
-
-        private void displayInfo() {
-            System.out.printf("*** Car %d ***%nspeed: %.2f%nposition: %s%n",
-                            getCarId(),
-                            getVelocity().magnitude(),
-                            getPosition());
-        }
+    public double getX() {
+        return x.get();
     }
 
-    public void setPosition(Point2D position){
-        this.position = position;
-        setX(position.getX());
-        setY(position.getY() );
+    public DoubleProperty xProperty() {
+        return x;
+    }
+
+    public void setX(double x) {
+        this.x.set(x);
+    }
+
+    public double getY() {
+        return y.get();
+    }
+
+    public DoubleProperty yProperty() {
+        return y;
+    }
+
+    public void setY(double y) {
+        this.y.set(y);
+    }
+
+    public double getxVelocity() {
+        return xVelocity.get();
+    }
+
+    public DoubleProperty xVelocityProperty() {
+        return xVelocity;
+    }
+
+    public void setxVelocity(double xVelocity) {
+        this.xVelocity.set(xVelocity);
+    }
+
+    public double getyVelocity() {
+        return yVelocity.get();
+    }
+
+    public DoubleProperty yVelocityProperty() {
+        return yVelocity;
+    }
+
+    public void setyVelocity(double yVelocity) {
+        this.yVelocity.set(yVelocity);
+    }
+
+    public double getSpeed() {
+        return speed.get();
+    }
+
+    public ReadOnlyDoubleWrapper speedProperty() {
+        return speed;
+    }
+
+    public double getWidth() {
+        return view.getWidth();
+    }
+
+    public void setWidth(double width) {
+        view.setWidth(width);
+    }
+
+    public double getHeight() {
+        return view.getHeight();
+    }
+
+    public void setHeight(double height) {
+        view.setHeight(height);
+    }
+
+    public double getRotate() {
+        return view.getHeight();
     }
 }
