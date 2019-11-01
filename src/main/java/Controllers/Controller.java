@@ -40,7 +40,7 @@ public class Controller {
     @FXML
     public void initialize() {
         simServ = new SimulationService(new RoadRepositoryImpl(), new CarRepositoryImpl());
-        Road road1 = new Road(50, 50, 800, 800);
+        Road road1 = new Road(50, 50, 800, 600);
         simServ.addRoad(road1);
         for (int i = 0; i < LINE_NUMBER; i++) {
             simServ.addLine(road1.getRoadId());

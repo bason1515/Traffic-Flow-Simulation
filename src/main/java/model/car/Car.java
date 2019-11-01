@@ -11,6 +11,8 @@ import lombok.Getter;
 import lombok.Setter;
 import model.road.Road;
 
+import java.util.Optional;
+
 
 @Getter
 @Setter
@@ -21,7 +23,8 @@ public class Car {
     @Setter(AccessLevel.NONE)
     private final Long carId;
 
-    Road currentRoad;
+    private Road currentRoad;
+    private Optional<Road> transition;
     //    Properties
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
@@ -36,7 +39,6 @@ public class Car {
     private double maxBreak;
     private double maxVel;
     //    View
-    private boolean transition;
     private Rectangle view;
 
     public Car(double x, double y, double width, double height, Road currentRoad, double maxAccel, double maxBreak, double maxVel) {
@@ -45,6 +47,7 @@ public class Car {
         this.maxBreak = maxBreak;
         this.maxVel = maxVel;
         this.currentRoad = currentRoad;
+        this.transition = Optional.empty();
         this.view = new Rectangle(x, y, width, height);
         this.x = new SimpleDoubleProperty(this, "x", x);
         this.y = new SimpleDoubleProperty(this, "y", y);

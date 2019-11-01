@@ -11,7 +11,6 @@ import repository.RoadRepository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 @Data
@@ -60,33 +59,51 @@ public class SimulationService {
         double elapsedSeconds = elapsedTime / 1_000_000_000.0;
         carRepo.getAll().forEach(c -> {
             Point2D distTraveled = c.getVelocity().multiply(elapsedSeconds);
-            c.setPosition(c.getPosition().add(distTraveled));
+            c.setPosition(applyRoadBorder(c, distTraveled));
         });
+    }
+
+    private Point2D applyRoadBorder(Car car, Point2D distTraveled) {
+        Road road = car.getCurrentRoad();
+        double distToBorder = road.getEndPoint2D().distance(car.getPosition());
+        if (distToBorder < Road.LINE_OFFSET) { // end of road
+            car.setTransition(Optional.empty()); // canceling transit
+            car.setVelocity(car.getCurrentRoad().getDirection().multiply(car.getSpeed()));
+            return road.getStartPoint2D();
+        }
+        if (car.getTransition().isPresent()) {
+            Point2D transitEndPoint = car.getTransition().get().getEndPoint2D();
+            distToBorder = transitEndPoint.distance(car.getPosition());
+            if (distTraveled.magnitude() >= distToBorder) return handleTransit(car); // end of transit
+        }
+        return car.getPosition().add(distTraveled);
+    }
+
+    private Point2D handleTransit(Car car) {
+        Point2D endPoint = car.getTransition().get().getEndPoint2D();
+        car.setTransition(Optional.empty());
+        car.setVelocity(car.getCurrentRoad().getDirection().multiply(car.getSpeed()));
+        return endPoint;
     }
 
     private void driveCar(Car car) {
         final Point2D position = car.getPosition();
         Point2D velocity = car.getVelocity();
-        final Road road = car.getCurrentRoad();
-        if (car.getCurrentRoad().getEndPoint2D().distance(position) < 5) {
-            if (car.isTransition()) {
-                car.setPosition(car.getCurrentRoad().getEndPoint2D());
-                car.setCurrentRoad(road.getLeft());
-                car.getCurrentRoad().addOnRoad(car);
-                car.setVelocity(car.getCurrentRoad().getDirection().multiply(car.getVelocity().magnitude()));
-                car.setTransition(false);
+        Road road = car.getCurrentRoad();
+        if (car.getTransition().isPresent()) {
+            road = car.getTransition().get();
+        }
+
+        if (!car.getTransition().isPresent()) {
+            if (isCarInFront(car, 40)) {
+                if (road.getLeft() != null && changeLine(car, road.getLeft())) return;
+            }
+            if (road.getRight() != null && changeLine(car, road.getRight())) return;
+
+            if (isCarInFront(car, 25)) {
+                stopCar(car);
                 return;
             }
-            car.setX(road.getStartX());
-            car.setY(road.getStartY());
-            return;
-        }
-        if (isCarInFront(car, 40) && !car.isTransition()) {
-            if (changeLine(car)) return;
-        }
-        if (isCarInFront(car, 25) && !car.isTransition()) {
-            stopCar(car);
-            return;
         }
         Point2D force = road.getDriveDirection(position);
         Point2D accel = Point2D.ZERO;
@@ -123,44 +140,28 @@ public class SimulationService {
         else car.setVelocity(car.getVelocity().add(velVec));
     }
 
-    private boolean changeLine(Car car) {
-        Road myRoad = car.getCurrentRoad();
-        Road target;
-        if (myRoad.getLeft() == null) {
-            if (myRoad.getRight() == null)
-                return false;
-            target = myRoad.getRight();
-        } else target = myRoad.getLeft();
-
-        if (myRoad.getLeft() != null && myRoad.getRight() != null) {
-            ThreadLocalRandom rng = ThreadLocalRandom.current();
-            if (rng.nextDouble() < 0.5) target = myRoad.getLeft();
-            else target = myRoad.getRight();
-        }
-
+    private boolean changeLine(Car car, Road target) {
         Point2D pos = car.getPosition();
         double distance = car.getCurrentRoad().getStartPoint2D().subtract(pos).magnitude();
-        Point2D desPos = target.getPointOnLine(distance + 20);
+        Point2D desPos = target.getPointOnLine(distance + car.getSpeed());
 
-        for (Car c : target.getOnRoad()) {
-            if (c.getPosition().distance(car.getPosition()) < 50) {
-                return false;
-            }
-        }
+        boolean isThereACar = target.getOnRoad().stream()
+                .anyMatch(c -> c.getPosition().distance(car.getPosition()) < 50);
+        if (isThereACar) return false;
 
         Line dirLine = new Line(car.getX(), car.getY(), desPos.getX(), desPos.getY());
         Road road = new Road(pos.getX(), pos.getY(), desPos.getX(), desPos.getY());
-        road.setLeft(target);
         car.getCurrentRoad().removeOnRoad(car);
-        car.setCurrentRoad(road);
-        car.setVelocity(road.getDirection().multiply(car.getVelocity().magnitude()));
-        car.setTransition(true);
+        target.addOnRoad(car);
+        car.setCurrentRoad(target);
+        car.setVelocity(road.getDirection().multiply(car.getSpeed()));
+        car.setTransition(Optional.of(road));
         return true;
     }
 
-    public Point2D turnLeft(Point2D vec, double angle) {
-        double x2 = Math.cos(angle) * vec.getX() - Math.sin(angle) * vec.getY();
-        double y2 = Math.sin(angle) * vec.getX() + Math.cos(angle) * vec.getY();
-        return new Point2D(x2, y2);
-    }
+//    public Point2D turnLeft(Point2D vec, double angle) {
+//        double x2 = Math.cos(angle) * vec.getX() - Math.sin(angle) * vec.getY();
+//        double y2 = Math.sin(angle) * vec.getX() + Math.cos(angle) * vec.getY();
+//        return new Point2D(x2, y2);
+//    }
 }
