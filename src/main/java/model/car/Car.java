@@ -1,147 +1,54 @@
 package model.car;
 
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.ReadOnlyDoubleWrapper;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Point2D;
 import javafx.scene.shape.Rectangle;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import model.car.driveBehavior.DriveOnRoad;
+import model.car.driveBehavior.DriveStrategy;
 import model.road.Road;
-
-import java.util.Optional;
-
 
 @Getter
 @Setter
-public class Car {
+public class Car extends LimitedMovingPoint {
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     private static Long count = 1L;
     @Setter(AccessLevel.NONE)
     private final Long carId;
 
+    private DriveStrategy driver;
     private Road currentRoad;
-    private Optional<Road> transition;
-    //    Properties
-    @Getter(AccessLevel.NONE)
-    @Setter(AccessLevel.NONE)
-    private DoubleProperty x, y, xVelocity, yVelocity;
-    @Getter(AccessLevel.NONE)
-    @Setter(AccessLevel.NONE)
-    private final ReadOnlyDoubleWrapper speed;
-//    private final ReadOnlyDoubleWrapper front; // angle
-
-    //    Limitation
-    private double maxAccel;
-    private double maxBreak;
-    private double maxVel;
-    //    View
     private Rectangle view;
 
-    public Car(double x, double y, double width, double height, Road currentRoad, double maxAccel, double maxBreak, double maxVel) {
+    public void performDrive(Car carInFront) {
+        driver = driver.driveCar(carInFront);
+    }
+
+    public Car(Point2D position, Limitation carLimits, double width, double height, Road currentRoad) {
+        super(position, carLimits);
         carId = count++;
-        this.maxAccel = maxAccel;
-        this.maxBreak = maxBreak;
-        this.maxVel = maxVel;
         this.currentRoad = currentRoad;
-        this.transition = Optional.empty();
-        this.view = new Rectangle(x, y, width, height);
-        this.x = new SimpleDoubleProperty(this, "x", x);
-        this.y = new SimpleDoubleProperty(this, "y", y);
-        this.xVelocity = new SimpleDoubleProperty(this, "xVelocity", 0);
-        this.yVelocity = new SimpleDoubleProperty(this, "yVelocity", 0);
-        this.speed = new ReadOnlyDoubleWrapper(this, "speed");
-
-//        Bindings
-        speed.bind(Bindings.createDoubleBinding(() -> this.getVelocity().magnitude(), this.xVelocity, this.yVelocity));
-        view.xProperty().bind(Bindings.createDoubleBinding(() -> getX() - view.getWidth() / 2, this.x));
-        view.yProperty().bind(Bindings.createDoubleBinding(() -> getY() - view.getHeight() / 2, this.y));
-        view.rotateProperty().bind(Bindings.createDoubleBinding(() -> {
-            Point2D direction = this.getVelocity();
-            if (direction.equals(Point2D.ZERO)) direction = currentRoad.getDirection();
-            if (getxVelocity() < 0)
-                return direction.angle(0, 1) + 180.0;
-            return direction.angle(0, -1);
-        }, this.xVelocity, this.yVelocity));
+        this.driver = new DriveOnRoad(this, null);
+        this.view = new Rectangle(getX(), getY(), width, height);
+        bindings();
     }
 
-//    Getters Setters
-
-    public Point2D getPosition() {
-        return new Point2D(this.getX(), this.getY());
+    private void bindings() {
+        view.xProperty().bind(Bindings.createDoubleBinding(() -> getX() - view.getWidth() / 2, xProperty()));
+        view.yProperty().bind(Bindings.createDoubleBinding(() -> getY() - view.getHeight() / 2, yProperty()));
+        view.rotateProperty().bind(Bindings.createDoubleBinding(this::calculateRotation, xVelocityProperty(), yVelocityProperty()));
     }
 
-    public void setPosition(Point2D position) {
-        this.setX(position.getX());
-        this.setY(position.getY());
-    }
-
-    public Point2D getVelocity() {
-        return new Point2D(this.getxVelocity(), this.getyVelocity());
-    }
-
-    public void setVelocity(Point2D position) {
-        this.setxVelocity(position.getX());
-        this.setyVelocity(position.getY());
-    }
-
-    public double getX() {
-        return x.get();
-    }
-
-    public DoubleProperty xProperty() {
-        return x;
-    }
-
-    public void setX(double x) {
-        this.x.set(x);
-    }
-
-    public double getY() {
-        return y.get();
-    }
-
-    public DoubleProperty yProperty() {
-        return y;
-    }
-
-    public void setY(double y) {
-        this.y.set(y);
-    }
-
-    public double getxVelocity() {
-        return xVelocity.get();
-    }
-
-    public DoubleProperty xVelocityProperty() {
-        return xVelocity;
-    }
-
-    public void setxVelocity(double xVelocity) {
-        this.xVelocity.set(xVelocity);
-    }
-
-    public double getyVelocity() {
-        return yVelocity.get();
-    }
-
-    public DoubleProperty yVelocityProperty() {
-        return yVelocity;
-    }
-
-    public void setyVelocity(double yVelocity) {
-        this.yVelocity.set(yVelocity);
-    }
-
-    public double getSpeed() {
-        return speed.get();
-    }
-
-    public ReadOnlyDoubleWrapper speedProperty() {
-        return speed;
+    private double calculateRotation() {
+        Point2D direction = this.getVelocity();
+        if (direction.equals(Point2D.ZERO)) direction = currentRoad.getDirection(); // TODO something better?
+        // Point2D .angle doesn't distinguishes left or right
+        if (getxVelocity() < 0)
+            return direction.angle(0, 1) + 180.0;
+        return direction.angle(0, -1);
     }
 
     public double getWidth() {
@@ -162,5 +69,10 @@ public class Car {
 
     public double getRotate() {
         return view.getHeight();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Car %d [%.0f , %.0f]", carId, getX(), getY());
     }
 }
