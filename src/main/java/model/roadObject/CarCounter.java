@@ -1,6 +1,8 @@
 package model.roadObject;
 
 import javafx.geometry.Point2D;
+import javafx.scene.Group;
+import javafx.scene.control.Label;
 import javafx.scene.shape.Line;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,24 +23,40 @@ public class CarCounter {
     int totalSpeed;
     Point2D start;
     Point2D end;
-    Line view;
+    Line line;
+    Label label;
+    Group view;
 
     public CarCounter(Road road) {
+        refreshSec = 5;
+        view = new Group();
+        initLine(road);
+        initLabel();
+    }
+
+    private void initLine(Road road) {
         List<Road> monitoredRoads = road.getAllLines();
         Road firstRoad = monitoredRoads.get(0);
         Road lastRoad = monitoredRoads.get(monitoredRoads.size() - 1);
         start = firstRoad.getStartPoint2D().midpoint(firstRoad.getEndPoint2D());
         end = lastRoad.getStartPoint2D().midpoint(lastRoad.getEndPoint2D());
         offsetCounterLine();
-        view = new Line(start.getX(), start.getY(),
+        line = new Line(start.getX(), start.getY(),
                 end.getX(), end.getY());
-        refreshSec = 5;
+        view.getChildren().add(line);
     }
 
     private void offsetCounterLine() {
         Point2D size = start.subtract(end);
         start = start.add(size);
         end = end.add(size.multiply(-1));
+    }
+
+    private void initLabel() {
+        label = new Label("Car/h: " + 0 + "\nAvg Speed: " + 0);
+        label.setLayoutX(start.getX());
+        label.setLayoutY(start.getY());
+        view.getChildren().add(label);
     }
 
     public void update(Collection<Car> cars, double elapsedSeconds) {
@@ -48,7 +66,7 @@ public class CarCounter {
         addToAverage(crossedCar);
         timeFromLastRefresh += elapsedSeconds;
         if (timeFromLastRefresh > refreshSec) {
-            calculateAverage();
+            calculateAverageAndUpdateLabel();
             resetCounter();
         }
     }
@@ -85,13 +103,13 @@ public class CarCounter {
         totalCar += crossedCar.size();
     }
 
-    private void calculateAverage() {
+    private void calculateAverageAndUpdateLabel() {
         if (totalCar != 0) {
             int avgSpeed = totalSpeed / totalCar;
-            int throughputPerMinute = 60 / refreshSec * totalCar;
-            System.out.println("Avg Speed: " + avgSpeed + "\nCar/min: " + throughputPerMinute);
+            int throughputPerHour = 3600 / refreshSec * totalCar;
+            label.setText("Car/h: " + throughputPerHour + "\nAvg Speed: " + avgSpeed);
         } else
-            System.out.println("Avg Speed: " + 0 + "\nCar/min: " + 0);
+            label.setText("Car/h: " + 0 + "\nAvg Speed: " + 0);
     }
 
     public void resetCounter() {
