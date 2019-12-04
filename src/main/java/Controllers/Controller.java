@@ -1,6 +1,7 @@
 package Controllers;
 
 import Service.CarService;
+import Service.RoadObjectService;
 import Service.RoadService;
 import javafx.animation.AnimationTimer;
 import javafx.beans.property.LongProperty;
@@ -43,6 +44,7 @@ public class Controller {
 
     private CarService carService;
     private RoadService roadService;
+    private RoadObjectService roadObjectService;
 
     @FXML
     public void initialize() {
@@ -50,14 +52,16 @@ public class Controller {
         CarRepository carRepository = new CarRepositoryImpl();
         roadService = new RoadService(roadRepository);
         carService = new CarService(carRepository, roadRepository);
+        roadObjectService = new RoadObjectService(carRepository);
         roadsInit();
         carsInit();
+        roadObjectsInit();
         carService.getCarRepo().addListener((MapChangeListener<Long, Car>) change -> {
-            if (change.wasAdded()){
+            if (change.wasAdded()) {
                 Car addedCar = change.getValueAdded();
                 sim.getChildren().add(addedCar.getView());
             }
-            if (change.wasRemoved()){
+            if (change.wasRemoved()) {
                 Car removedCar = change.getValueRemoved();
                 sim.getChildren().remove(removedCar.getView());
             }
@@ -78,6 +82,12 @@ public class Controller {
         sim.getChildren().addAll(carService.getAllCarsView());
     }
 
+    private void roadObjectsInit() {
+        Road road = roadService.getRoadRepo().byId(1L);
+        roadObjectService.createCarCounter(road);
+        sim.getChildren().addAll(roadObjectService.getAllViews());
+    }
+
     private List<Car> createCars(int num, double minVelo, double maxVelo, double minAcce, double maxAcce, double maxBreak, double carLength) {
         ThreadLocalRandom rng = ThreadLocalRandom.current();
         ArrayList<Car> result = new ArrayList<>();
@@ -88,7 +98,7 @@ public class Controller {
             Point2D pos = randRoad.getDirection().multiply(rng.nextDouble(length)).add(randRoad.getStartPoint2D());
             double randVelo = rng.nextDouble(minVelo, maxVelo);
             double randAccel = rng.nextDouble(minAcce, maxAcce);
-            Limitation limits = new Limitation(randAccel, randAccel*-1, randVelo);
+            Limitation limits = new Limitation(randAccel, randAccel * -1, randVelo);
             Car car = new Car(pos, limits, 5, carLength, randRoad);
             result.add(car);
         }
@@ -102,6 +112,7 @@ public class Controller {
             public void handle(long timestamp) {
                 if (lastUpdateTime.get() > 0) {
                     long elapsedTime = timestamp - lastUpdateTime.get();
+                    roadObjectService.updateRoadObjects(elapsedTime);
                     carService.updateCars(elapsedTime);
                 }
                 lastUpdateTime.set(timestamp);
