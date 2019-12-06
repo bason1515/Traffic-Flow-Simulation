@@ -4,8 +4,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
 import model.car.Car;
+import model.car.CarType;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CarRepositoryImpl implements CarRepository {
     private ObservableMap<Long, Car> cars;
@@ -32,6 +35,12 @@ public class CarRepositoryImpl implements CarRepository {
     @Override
     public Car byId(Long id) {
         return cars.get(id);
+    }
+
+    @Override
+    public List<Car> byCarType(CarType type) {
+        return cars.values().stream().filter(car -> car.getType().equals(type))
+                .collect(Collectors.toList());
     }
 
     @Override

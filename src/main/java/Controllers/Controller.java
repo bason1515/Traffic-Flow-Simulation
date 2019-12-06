@@ -1,5 +1,6 @@
 package Controllers;
 
+import Controllers.event.StartStopEvent;
 import Service.CarService;
 import Service.RoadObjectService;
 import Service.RoadService;
@@ -9,8 +10,10 @@ import javafx.beans.property.SimpleLongProperty;
 import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
+import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
 import model.car.Car;
+import model.car.CarType;
 import model.car.Limitation;
 import model.road.Road;
 import repository.CarRepository;
@@ -41,10 +44,14 @@ public class Controller {
 
     @FXML
     private Pane sim;
+    @FXML
+    private Button startButton;
 
     private CarService carService;
     private RoadService roadService;
     private RoadObjectService roadObjectService;
+
+    AnimationTimer simulationTimer;
 
     @FXML
     public void initialize() {
@@ -66,7 +73,7 @@ public class Controller {
                 sim.getChildren().remove(removedCar.getView());
             }
         });
-        startAnimation();
+        startButton.setOnAction(new StartStopEvent(startButton, this));
     }
 
     private void roadsInit() {
@@ -77,8 +84,14 @@ public class Controller {
     }
 
     private void carsInit() {
-        createCars(CAR_NUMBER, MIN_VELO, MAX_VELO, MIN_ACCE, MAX_ACCE, BREAK_SPEED, 8).forEach(carService::addCar);
-        createCars(TRUCK_NUMBER, TMIN_VELO, TMAX_VELO, TMIN_ACCE, TMAX_ACCE, TBREAK_SPEED, 20).forEach(carService::addCar);
+        createCars(CAR_NUMBER, MIN_VELO, MAX_VELO, MIN_ACCE, MAX_ACCE, BREAK_SPEED, 8).forEach(car -> {
+            car.setType(CarType.CAR);
+            carService.addCar(car);
+        });
+        createCars(TRUCK_NUMBER, TMIN_VELO, TMAX_VELO, TMIN_ACCE, TMAX_ACCE, TBREAK_SPEED, 20).forEach(car -> {
+            car.setType(CarType.TRUCK);
+            carService.addCar(car);
+        });
         sim.getChildren().addAll(carService.getAllCarsView());
     }
 
@@ -105,9 +118,9 @@ public class Controller {
         return result;
     }
 
-    private void startAnimation() {
+    public void startAnimation() {
         final LongProperty lastUpdateTime = new SimpleLongProperty(0);
-        final AnimationTimer timer = new AnimationTimer() {
+        simulationTimer = new AnimationTimer() {
             @Override
             public void handle(long timestamp) {
                 if (lastUpdateTime.get() > 0) {
@@ -119,7 +132,11 @@ public class Controller {
             }
 
         };
-        timer.start();
+        simulationTimer.start();
+    }
+
+    public void stopAnimation() {
+        simulationTimer.stop();
     }
 
     private void addMouseScroll() {

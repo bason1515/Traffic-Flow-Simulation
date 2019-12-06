@@ -19,6 +19,7 @@ public class Car extends LimitedMovingPoint {
     @Setter(AccessLevel.NONE)
     private final Long carId;
 
+    private CarType type;
     private DriveStrategy driver;
     private Road currentRoad;
     private Rectangle view;
@@ -30,6 +31,7 @@ public class Car extends LimitedMovingPoint {
     public Car(Point2D position, Limitation carLimits, double width, double height, Road currentRoad) {
         super(position, carLimits);
         carId = count++;
+        this.type = CarType.CAR;
         this.currentRoad = currentRoad;
         this.driver = new DriveOnRoad(this, null);
         this.view = new Rectangle(getX(), getY(), width, height);
