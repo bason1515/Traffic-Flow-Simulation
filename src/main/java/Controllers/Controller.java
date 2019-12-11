@@ -139,15 +139,4 @@ public class Controller {
         simulationTimer.stop();
     }
 
-    private void addMouseScroll() {
-        sim.setOnScroll(event -> {
-            double zoomFactor = 1.05;
-            double deltaY = event.getDeltaY();
-            if (deltaY < 0) {
-                zoomFactor = 2.0 - zoomFactor;
-            }
-            sim.setScaleX(sim.getScaleX() * zoomFactor);
-            sim.setScaleY(sim.getScaleY() * zoomFactor);
-        });
-    }
 }
