@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import model.car.driveBehavior.DriveOnRoad;
 import model.car.driveBehavior.DriveStrategy;
+import model.car.event.OnCarClickEvent;
 import model.road.Road;
 
 @Getter
@@ -35,6 +36,7 @@ public class Car extends LimitedMovingPoint {
         this.currentRoad = currentRoad;
         this.driver = new DriveOnRoad(this, null);
         this.view = new Rectangle(getX(), getY(), width, height);
+        view.setOnMouseClicked(new OnCarClickEvent(this));
         bindings();
     }
 
