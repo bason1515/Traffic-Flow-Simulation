@@ -1,34 +1,69 @@
 package model.car;
 
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Point2D;
-import lombok.Data;
 
-@Data
 public class Limitation {
-    private double maxAccel;
-    private double maxBreak;
-    private double maxVel;
+    private DoubleProperty maxAccel;
+    private DoubleProperty maxBreak;
+    private DoubleProperty maxVel;
 
     public static Point2D limit(Point2D target, double limitation) {
         return target.normalize().multiply(limitation);
     }
 
     public Limitation(double maxAccel, double maxBreak, double maxVel) {
-        this.maxAccel = maxAccel;
-        this.maxBreak = maxBreak;
-        this.maxVel = maxVel;
+        this.maxAccel = new SimpleDoubleProperty(this, "maxAccel", maxAccel);
+        this.maxBreak = new SimpleDoubleProperty(this, "maxBreak", maxBreak);
+        this.maxVel = new SimpleDoubleProperty(this, "maxVel", maxVel);
     }
 
     public Point2D limitWithMaxAccel(Point2D vector) {
-        return limit(vector, maxAccel);
+        return limit(vector, getMaxAccel());
     }
 
     public Point2D limitWithMaxBreak(Point2D vector) {
-        return limit(vector, maxBreak);
+        return limit(vector, getMaxBreak());
     }
 
     public Point2D limitWithMaxVelo(Point2D vector) {
-        return limit(vector, maxVel);
+        return limit(vector, getMaxVel());
     }
 
+    public double getMaxAccel() {
+        return maxAccel.get();
+    }
+
+    public DoubleProperty maxAccelProperty() {
+        return maxAccel;
+    }
+
+    public void setMaxAccel(double maxAccel) {
+        this.maxAccel.set(maxAccel);
+    }
+
+    public double getMaxBreak() {
+        return maxBreak.get();
+    }
+
+    public DoubleProperty maxBreakProperty() {
+        return maxBreak;
+    }
+
+    public void setMaxBreak(double maxBreak) {
+        this.maxBreak.set(maxBreak);
+    }
+
+    public double getMaxVel() {
+        return maxVel.get();
+    }
+
+    public DoubleProperty maxVelProperty() {
+        return maxVel;
+    }
+
+    public void setMaxVel(double maxVel) {
+        this.maxVel.set(maxVel);
+    }
 }

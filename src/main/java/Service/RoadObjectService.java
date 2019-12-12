@@ -1,15 +1,19 @@
 package Service;
 
 import javafx.scene.Node;
+import lombok.Getter;
+import lombok.Setter;
 import model.road.Road;
 import model.roadObject.CarCounter;
 import model.roadObject.VehicleSpawner;
 import repository.CarRepository;
 
+@Getter
+@Setter
 public class RoadObjectService {
-    CarRepository carRepository;
-    CarCounter carCounter;
-    VehicleSpawner spawner;
+    private CarRepository carRepository;
+    private CarCounter carCounter;
+    private VehicleSpawner spawner;
 
     public RoadObjectService(CarRepository carRepository) {
         this.carRepository = carRepository;
@@ -19,10 +23,9 @@ public class RoadObjectService {
         carCounter = new CarCounter(road);
     }
 
-    public void createVehicleSpawner(Road... roads){
+    public void createVehicleSpawner(Road... roads) {
         spawner = new VehicleSpawner(carRepository);
         spawner.addRoads(roads);
-        spawner.setVehiclePerMinute(500);
     }
 
     public void updateRoadObjects(long elapsedTime) {

@@ -20,15 +20,20 @@ public class VehicleSpawner {
     @Getter
     @Setter
     private List<Road> roads;
+    @Getter
+    @Setter
+    private Limitation carLimits, truckLimits;
     private CarRepository carRepo;
-    private IntegerProperty vehiclePerMinute;
+    private IntegerProperty vehiclePerHour;
     private ReadOnlyDoubleWrapper spawnRate;
     private double lastSpawnTimeInSec;
 
     public VehicleSpawner(CarRepository carRepository) {
         this.carRepo = carRepository;
         roads = new ArrayList<>();
-        vehiclePerMinute = new SimpleIntegerProperty(this, "spawnRate", 0);
+        carLimits = new Limitation(1.5, -1.5, 80);
+        truckLimits = new Limitation(1, -1, 60);
+        vehiclePerHour = new SimpleIntegerProperty(this, "vehiclePerHour", 0);
         spawnRate = new ReadOnlyDoubleWrapper(this, "spawnRate");
         lastSpawnTimeInSec = 0;
         bindSpawnRate();
@@ -36,12 +41,13 @@ public class VehicleSpawner {
 
     private void bindSpawnRate() {
         spawnRate.bind(Bindings.createDoubleBinding(() -> {
-            if (this.getVehiclePerMinute() == 0) return 0.0;
-            return 60.0 / this.getVehiclePerMinute();
-        }, vehiclePerMinute));
+            if (this.getVehiclePerHour() == 0) return 0.0;
+            return 3600.0 / this.getVehiclePerHour();
+        }, vehiclePerHour));
     }
 
     public void update(double elapsedSeconds) {
+        if (spawnRate.get() == 0.0) return;
         lastSpawnTimeInSec += elapsedSeconds;
         while (lastSpawnTimeInSec >= spawnRate.get()) {
             lastSpawnTimeInSec -= spawnRate.get();
@@ -66,8 +72,7 @@ public class VehicleSpawner {
     }
 
     private void createVehicleOnRoad(Road road) {
-        Limitation limits = new Limitation(1.5, -1, 80);
-        Car car = new Car(road.getStartPoint2D(), limits, 5, 8, road);
+        Car car = new Car(road.getStartPoint2D(), carLimits, 5, 8, road);
         carRepo.save(car);
         road.addOnRoad(car);
     }
@@ -80,16 +85,16 @@ public class VehicleSpawner {
         this.roads.removeAll(Arrays.asList(roads));
     }
 
-    public int getVehiclePerMinute() {
-        return vehiclePerMinute.get();
+    public int getVehiclePerHour() {
+        return vehiclePerHour.get();
     }
 
-    public IntegerProperty vehiclePerMinuteProperty() {
-        return vehiclePerMinute;
+    public IntegerProperty vehiclePerHourProperty() {
+        return vehiclePerHour;
     }
 
-    public void setVehiclePerMinute(int vehiclePerMinute) {
-        this.vehiclePerMinute.set(vehiclePerMinute);
+    public void setVehiclePerHour(int vehiclePerHour) {
+        this.vehiclePerHour.set(vehiclePerHour);
     }
 
 }

@@ -16,7 +16,7 @@ class VehicleSpawnerTest {
         road = new Road(0, 0, 50, 50);
         spawner = new VehicleSpawner(new CarRepositoryImpl());
         spawner.addRoads(road);
-        spawner.setVehiclePerMinute(60);
+        spawner.setVehiclePerHour(3600);
     }
 
     @Test

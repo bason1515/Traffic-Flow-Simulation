@@ -10,6 +10,8 @@ import javafx.beans.property.SimpleLongProperty;
 import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.layout.Pane;
 import model.car.Car;
 import model.road.Road;
@@ -25,6 +27,10 @@ public class Controller {
     private Pane sim;
     @FXML
     private Button startButton;
+    @FXML
+    private Slider spawnRateSlider;
+    @FXML
+    private Label spawnRateLabel;
 
     private CarService carService;
     private RoadService roadService;
@@ -65,7 +71,15 @@ public class Controller {
         Road road = roadService.getRoadRepo().byId(1L);
         roadObjectService.createCarCounter(road);
         roadObjectService.createVehicleSpawner(roadService.getRoadRepo().getAll().toArray(new Road[0]));
+        connectSpawnRatio();
         sim.getChildren().addAll(roadObjectService.getAllViews());
+    }
+
+    private void connectSpawnRatio() {
+        spawnRateSlider.valueProperty().addListener((obs, oldval, newVal) ->
+                spawnRateSlider.setValue(newVal.intValue()));
+        spawnRateLabel.textProperty().bind(spawnRateSlider.valueProperty().asString());
+        roadObjectService.getSpawner().vehiclePerHourProperty().bindBidirectional(spawnRateSlider.valueProperty());
     }
 
     public void startAnimation() {
