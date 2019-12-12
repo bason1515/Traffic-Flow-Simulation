@@ -98,6 +98,7 @@ public class Controller {
     private void roadObjectsInit() {
         Road road = roadService.getRoadRepo().byId(1L);
         roadObjectService.createCarCounter(road);
+        roadObjectService.createVehicleSpawner(roadService.getRoadRepo().getAll().toArray(new Road[0]));
         sim.getChildren().addAll(roadObjectService.getAllViews());
     }
 

@@ -9,6 +9,7 @@ import lombok.Setter;
 import model.car.Car;
 import model.car.Limitation;
 import model.road.Road;
+import repository.CarRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,11 +20,13 @@ public class VehicleSpawner {
     @Getter
     @Setter
     private List<Road> roads;
+    private CarRepository carRepo;
     private IntegerProperty vehiclePerMinute;
     private ReadOnlyDoubleWrapper spawnRate;
     private double lastSpawnTimeInSec;
 
-    public VehicleSpawner() {
+    public VehicleSpawner(CarRepository carRepository) {
+        this.carRepo = carRepository;
         roads = new ArrayList<>();
         vehiclePerMinute = new SimpleIntegerProperty(this, "spawnRate", 0);
         spawnRate = new ReadOnlyDoubleWrapper(this, "spawnRate");
@@ -59,12 +62,13 @@ public class VehicleSpawner {
         if (road.getOnRoad().isEmpty()) return true;
         Car closestCar = road.getOnRoad().getFirst();
         double distance = road.getStartPoint2D().distance(closestCar.getPosition());
-        return distance > 50;
+        return distance > 10;
     }
 
     private void createVehicleOnRoad(Road road) {
         Limitation limits = new Limitation(1.5, -1, 80);
         Car car = new Car(road.getStartPoint2D(), limits, 5, 8, road);
+        carRepo.save(car);
         road.addOnRoad(car);
     }
 
