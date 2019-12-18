@@ -9,11 +9,11 @@ import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
-import javafx.geometry.Point2D;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.layout.Pane;
 import model.car.Car;
-import model.car.CarType;
 import model.car.Limitation;
 import model.road.Road;
 import repository.CarRepository;
@@ -21,31 +21,19 @@ import repository.CarRepositoryImpl;
 import repository.RoadRepository;
 import repository.RoadRepositoryImpl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import java.text.DecimalFormat;
 
 public class Controller {
     private static final int LINE_NUMBER = 3;
-
-    private static final int CAR_NUMBER = 50;
-    private static final double MIN_VELO = 75;
-    private static final double MAX_VELO = 95;
-    private static final double MIN_ACCE = 0.9;
-    private static final double MAX_ACCE = 1.2;
-    private static final double BREAK_SPEED = -2;
-
-    private static final int TRUCK_NUMBER = 15;
-    private static final double TMIN_VELO = 50;
-    private static final double TMAX_VELO = 55;
-    private static final double TMIN_ACCE = 0.5;
-    private static final double TMAX_ACCE = 0.6;
-    private static final double TBREAK_SPEED = -1;
 
     @FXML
     private Pane sim;
     @FXML
     private Button startButton;
+    @FXML
+    private Slider spawnRateSlider, truckChanceSlider, maxAcceSlider, maxVeloSlider, maxTruckAcceSlider, maxTruckVeloSlider;
+    @FXML
+    private Label spawnRateLabel, truckChanceLabel, maxCarAcceLabel, maxCarVeloLabel, maxTruckAcceLabel, maxTruckVeloLabel;
 
     private CarService carService;
     private RoadService roadService;
@@ -61,7 +49,6 @@ public class Controller {
         carService = new CarService(carRepository, roadRepository);
         roadObjectService = new RoadObjectService(carRepository);
         roadsInit();
-        carsInit();
         roadObjectsInit();
         carService.getCarRepo().addListener((MapChangeListener<Long, Car>) change -> {
             if (change.wasAdded()) {
@@ -83,39 +70,62 @@ public class Controller {
         sim.getChildren().addAll(roadService.getRoadRepo().getAll());
     }
 
-    private void carsInit() {
-        createCars(CAR_NUMBER, MIN_VELO, MAX_VELO, MIN_ACCE, MAX_ACCE, BREAK_SPEED, 8).forEach(car -> {
-            car.setType(CarType.CAR);
-            carService.addCar(car);
-        });
-        createCars(TRUCK_NUMBER, TMIN_VELO, TMAX_VELO, TMIN_ACCE, TMAX_ACCE, TBREAK_SPEED, 20).forEach(car -> {
-            car.setType(CarType.TRUCK);
-            carService.addCar(car);
-        });
-        sim.getChildren().addAll(carService.getAllCarsView());
-    }
-
     private void roadObjectsInit() {
         Road road = roadService.getRoadRepo().byId(1L);
         roadObjectService.createCarCounter(road);
+        roadObjectService.createVehicleSpawner(roadService.getRoadRepo().getAll().toArray(new Road[0]));
+        addSpawnerGui();
         sim.getChildren().addAll(roadObjectService.getAllViews());
     }
 
-    private List<Car> createCars(int num, double minVelo, double maxVelo, double minAcce, double maxAcce, double maxBreak, double carLength) {
-        ThreadLocalRandom rng = ThreadLocalRandom.current();
-        ArrayList<Car> result = new ArrayList<>();
-        int size = roadService.getRoadRepo().getAll().size();
-        for (int i = 0; i < num; i++) {
-            Road randRoad = roadService.getRoadRepo().byId(rng.nextLong(1, size + 1));
-            double length = randRoad.getStartPoint2D().subtract(randRoad.getEndPoint2D()).magnitude();
-            Point2D pos = randRoad.getDirection().multiply(rng.nextDouble(length)).add(randRoad.getStartPoint2D());
-            double randVelo = rng.nextDouble(minVelo, maxVelo);
-            double randAccel = rng.nextDouble(minAcce, maxAcce);
-            Limitation limits = new Limitation(randAccel, randAccel * -1, randVelo);
-            Car car = new Car(pos, limits, 5, carLength, randRoad);
-            result.add(car);
-        }
-        return result;
+    private void addSpawnerGui() {
+        DecimalFormat df = new DecimalFormat("#.##");
+        formatSliderDecimalValue(df, truckChanceSlider);
+        df = new DecimalFormat("#.#");
+        formatSliderDecimalValue(df, maxAcceSlider, maxTruckAcceSlider);
+        slidersValueToInt(spawnRateSlider, maxVeloSlider, maxTruckVeloSlider);
+        bindLabelToSlider(spawnRateLabel, spawnRateSlider);
+        bindLabelToSlider(truckChanceLabel, truckChanceSlider);
+        bindLabelToSlider(maxCarAcceLabel, maxAcceSlider);
+        bindLabelToSlider(maxCarVeloLabel, maxVeloSlider);
+        bindLabelToSlider(maxTruckAcceLabel, maxTruckAcceSlider);
+        bindLabelToSlider(maxTruckVeloLabel, maxTruckVeloSlider);
+        bindSlidersToSpawner();
+    }
+
+    private void bindSlidersToSpawner() {
+        roadObjectService.getSpawner().vehiclePerHourProperty().bindBidirectional(spawnRateSlider.valueProperty());
+        roadObjectService.getSpawner().truckChanceProperty().bindBidirectional(truckChanceSlider.valueProperty());
+        bindCarLimitation();
+        bindTruckLimitation();
+    }
+
+    private void bindLabelToSlider(Label label, Slider slider) {
+        label.textProperty().bind(slider.valueProperty().asString());
+    }
+
+    private void slidersValueToInt(Slider... sliders) {
+        for (Slider slider : sliders)
+            slider.valueProperty().addListener((obs, oldval, newVal) ->
+                    slider.setValue(newVal.intValue()));
+    }
+
+    private void formatSliderDecimalValue(DecimalFormat df, Slider... sliders) {
+        for (Slider slider : sliders)
+            slider.valueProperty().addListener((obs, oldVal, newVal) ->
+                    slider.setValue(Double.parseDouble(df.format(newVal))));
+    }
+
+    private void bindCarLimitation() {
+        Limitation limitation = roadObjectService.getSpawner().getCarLimits();
+        limitation.maxAccelProperty().bindBidirectional(maxAcceSlider.valueProperty());
+        limitation.maxVelProperty().bindBidirectional(maxVeloSlider.valueProperty());
+    }
+
+    private void bindTruckLimitation() {
+        Limitation truckLimits = roadObjectService.getSpawner().getTruckLimits();
+        truckLimits.maxAccelProperty().bindBidirectional(maxTruckAcceSlider.valueProperty());
+        truckLimits.maxVelProperty().bindBidirectional(maxTruckVeloSlider.valueProperty());
     }
 
     public void startAnimation() {
@@ -130,7 +140,6 @@ public class Controller {
                 }
                 lastUpdateTime.set(timestamp);
             }
-
         };
         simulationTimer.start();
     }
