@@ -1,9 +1,7 @@
 package model.roadObject;
 
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ReadOnlyDoubleWrapper;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.*;
 import lombok.Getter;
 import lombok.Setter;
 import model.car.Car;
@@ -15,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class VehicleSpawner {
     @Getter
@@ -26,6 +25,7 @@ public class VehicleSpawner {
     private CarRepository carRepo;
     private IntegerProperty vehiclePerHour;
     private ReadOnlyDoubleWrapper spawnRate;
+    private DoubleProperty truckChance;
     private double lastSpawnTimeInSec;
 
     public VehicleSpawner(CarRepository carRepository) {
@@ -35,6 +35,7 @@ public class VehicleSpawner {
         truckLimits = new Limitation(1, -1, 60);
         vehiclePerHour = new SimpleIntegerProperty(this, "vehiclePerHour", 0);
         spawnRate = new ReadOnlyDoubleWrapper(this, "spawnRate");
+        truckChance = new SimpleDoubleProperty(this, "truckChance", 0.10);
         lastSpawnTimeInSec = 0;
         bindSpawnRate();
     }
@@ -72,9 +73,15 @@ public class VehicleSpawner {
     }
 
     private void createVehicleOnRoad(Road road) {
-        Car car = new Car(road.getStartPoint2D(), carLimits, 5, 8, road);
+        Car car;
+        if (shouldISpawnTruck()) car = new Car(road.getStartPoint2D(), truckLimits, 5, 20, road);
+        else car = new Car(road.getStartPoint2D(), carLimits, 5, 8, road);
         carRepo.save(car);
         road.addOnRoad(car);
+    }
+
+    private boolean shouldISpawnTruck() {
+        return ThreadLocalRandom.current().nextDouble() <= getTruckChance();
     }
 
     public void addRoads(Road... roads) {
@@ -95,6 +102,18 @@ public class VehicleSpawner {
 
     public void setVehiclePerHour(int vehiclePerHour) {
         this.vehiclePerHour.set(vehiclePerHour);
+    }
+
+    public double getTruckChance() {
+        return truckChance.get();
+    }
+
+    public DoubleProperty truckChanceProperty() {
+        return truckChance;
+    }
+
+    public void setTruckChance(double truckChance) {
+        this.truckChance.set(truckChance);
     }
 
 }
