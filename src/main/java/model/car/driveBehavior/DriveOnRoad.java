@@ -38,13 +38,7 @@ public class DriveOnRoad implements DriveStrategy {
 
     private void driveBehind() {
         if (myCar.getSpeed() > carInFront.getSpeed() || !isSafeGap(SAFE_GAP - 5)) stopCar();
-        else {
-            double slowestCarVel = carInFront.getLimits().getMaxVel();
-            double tempMaxVel = myCar.getLimits().getMaxVel();
-            myCar.getLimits().setMaxVel(slowestCarVel);
-            driveOnRoad(drivenRoad);
-            myCar.getLimits().setMaxVel(tempMaxVel);
-        }
+        else driveOnRoad(drivenRoad);
     }
 
     private boolean isSafeGap(double safeGap) {
