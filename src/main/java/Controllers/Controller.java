@@ -44,8 +44,7 @@ public class Controller {
 
     AnimationTimer simulationTimer;
 
-    @FXML
-    private void closeButtonAction(){
+    public void shutdown(){
         timer.cancel();
     }
 
