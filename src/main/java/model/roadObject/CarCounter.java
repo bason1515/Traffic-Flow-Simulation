@@ -16,16 +16,16 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 public class CarCounter {
-    double timeFromLastRefresh;
-    double elapsedSeconds;
-    int refreshSec;
-    int totalCar;
-    int totalSpeed;
-    Point2D start;
-    Point2D end;
-    Line line;
-    Label label;
-    Group view;
+    private double timeFromLastRefresh;
+    private double elapsedSeconds;
+    private int refreshSec;
+    private int totalCar;
+    private int totalSpeed;
+    private int throughputPerHour;
+    private Point2D start, end;
+    private Line line;
+    private Label label;
+    private Group view;
 
     public CarCounter(Road road) {
         refreshSec = 5;
@@ -106,7 +106,7 @@ public class CarCounter {
     private void calculateAverageAndUpdateLabel() {
         if (totalCar != 0) {
             int avgSpeed = totalSpeed / totalCar;
-            int throughputPerHour = 3600 / refreshSec * totalCar;
+            throughputPerHour = 3600 / refreshSec * totalCar;
             label.setText("Car/h: " + throughputPerHour + "\nAvg Speed: " + avgSpeed);
         } else
             label.setText("Car/h: " + 0 + "\nAvg Speed: " + 0);

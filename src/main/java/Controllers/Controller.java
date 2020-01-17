@@ -2,6 +2,7 @@ package Controllers;
 
 import Controllers.event.StartStopEvent;
 import Service.CarService;
+import Service.DataSaver;
 import Service.RoadObjectService;
 import Service.RoadService;
 import javafx.animation.AnimationTimer;
@@ -22,6 +23,7 @@ import repository.RoadRepository;
 import repository.RoadRepositoryImpl;
 
 import java.text.DecimalFormat;
+import java.util.Timer;
 
 public class Controller {
     private static final int LINE_NUMBER = 3;
@@ -38,8 +40,14 @@ public class Controller {
     private CarService carService;
     private RoadService roadService;
     private RoadObjectService roadObjectService;
+    private Timer timer;
 
     AnimationTimer simulationTimer;
+
+    @FXML
+    private void closeButtonAction(){
+        timer.cancel();
+    }
 
     @FXML
     public void initialize() {
@@ -142,10 +150,14 @@ public class Controller {
             }
         };
         simulationTimer.start();
+        DataSaver task = new DataSaver(spawnRateSlider.valueProperty(), roadObjectService.getCarCounter());
+        timer = new Timer("Data Save");
+        timer.scheduleAtFixedRate(task, 5000L, 5000L);
     }
 
     public void stopAnimation() {
         simulationTimer.stop();
+        timer.cancel();
     }
 
     private void addMouseScroll() {
