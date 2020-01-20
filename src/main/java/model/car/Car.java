@@ -10,6 +10,8 @@ import model.car.driveBehavior.DriveOnRoad;
 import model.car.driveBehavior.DriveStrategy;
 import model.road.Road;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 @Getter
 @Setter
 public class Car extends LimitedMovingPoint {
@@ -24,6 +26,10 @@ public class Car extends LimitedMovingPoint {
     private Road currentRoad;
     private Rectangle view;
 
+    // Wiedemann driver dependent parameters
+    @Setter(AccessLevel.NONE)
+    private final double[] rnd = new double[4];
+
     public void performDrive(Car carInFront) {
         driver = driver.driveCar(carInFront);
     }
@@ -36,12 +42,21 @@ public class Car extends LimitedMovingPoint {
         this.driver = new DriveOnRoad(this, null);
         this.view = new Rectangle(getX(), getY(), width, height);
         bindings();
+        wiedemannParam();
     }
 
     private void bindings() {
         view.xProperty().bind(Bindings.createDoubleBinding(() -> getX() - view.getWidth() / 2, xProperty()));
         view.yProperty().bind(Bindings.createDoubleBinding(() -> getY() - view.getHeight() / 2, yProperty()));
         view.rotateProperty().bind(Bindings.createDoubleBinding(this::calculateRotation, xVelocityProperty(), yVelocityProperty()));
+    }
+
+    private void wiedemannParam() {
+        ThreadLocalRandom rng = ThreadLocalRandom.current();
+        rnd[0] = rng.nextGaussian();
+        rnd[1] = rng.nextGaussian();
+        rnd[2] = rng.nextGaussian();
+        rnd[3] = rng.nextGaussian();
     }
 
     private double calculateRotation() {
