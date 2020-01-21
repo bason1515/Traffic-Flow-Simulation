@@ -5,6 +5,7 @@ import model.car.Car;
 import model.road.Road;
 
 public class ChangeLine implements DriveStrategy {
+    private DriveOnRoad driveOnRoad;
     private Road target;
     private Road transition;
     private Car myCar;
@@ -37,12 +38,15 @@ public class ChangeLine implements DriveStrategy {
 
     @Override
     public DriveStrategy driveCar(Car carInFront) {
-        driveOnTransition();
+        driveOnRoad = new DriveOnRoad(myCar, carInFront);
+        driveOnRoad.setDrivenRoad(transition);
+        driveOnRoad.drive();
         checkIfEnded();
         return ended ? DriveStrategyDecider.getBestStrategy(myCar, carInFront) : this;
     }
 
     private void driveOnTransition() {
+
         myCar.accelerate(transition.getDirection());
     }
 

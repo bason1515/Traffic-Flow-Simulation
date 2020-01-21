@@ -45,7 +45,8 @@ public class Controller {
     AnimationTimer simulationTimer;
 
     public void shutdown(){
-        timer.cancel();
+        if (timer != null)
+            timer.cancel();
     }
 
     @FXML
