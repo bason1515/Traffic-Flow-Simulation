@@ -2,6 +2,7 @@ package model.car.driveBehavior;
 
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
+import lombok.Setter;
 import model.car.Car;
 import model.road.Road;
 
@@ -9,6 +10,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class DriveOnRoad implements DriveStrategy {
     private static ThreadLocalRandom rng = ThreadLocalRandom.current();
+    @Setter
     private Road drivenRoad;
     private Car myCar;
     private Car carInFront;
@@ -16,8 +18,8 @@ public class DriveOnRoad implements DriveStrategy {
     private double deltaX;
     private double deltaV;
 
-    private double rnd4 = rng.nextGaussian();
-    private double nrnd = rng.nextGaussian();
+    private static final double nrnd = rng.nextDouble();
+    private double l;
     private double ax;
     private double abx;
     private double sdx;
@@ -37,18 +39,23 @@ public class DriveOnRoad implements DriveStrategy {
         return DriveStrategyDecider.getBestStrategy(myCar, carInFront);
     }
 
-    private void drive() {
+    public void drive() {
         if (carInFront != null) {
             calculateParameters();
-            // Closing in
-            if (deltaV > sdv) {
-                decelerate();
-                myCar.getView().setFill(Color.YELLOW);
-            }
             // Emergency
-            else if (deltaX < abx) {
-                decelerate();
+            if (deltaX < abx) {
+                decelerate(0.7);
                 myCar.getView().setFill(Color.RED);
+                // Collision
+                if (deltaX <= 0.5) {
+                    myCar.setVelocity(Point2D.ZERO);
+                }
+            }
+            // Closing in
+            else if (deltaV > sdv) {
+                if (deltaV > cldv)
+                    decelerate(0.3);
+                myCar.getView().setFill(Color.YELLOW);
             }
             // Following
             else if (deltaV < opdv || deltaX > sdx) {
@@ -63,7 +70,7 @@ public class DriveOnRoad implements DriveStrategy {
         }
     }
 
-    public void calculateParameters() {
+    private void calculateParameters() {
         deltaV = myCar.getSpeed() - carInFront.getSpeed();
         deltaX = calcDeltaX();
         wiedemannModel();
@@ -77,29 +84,30 @@ public class DriveOnRoad implements DriveStrategy {
         return distanceBetween - carsLength;
     }
 
-    public void wiedemannModel() {
+    private void wiedemannModel() {
+        l = carInFront.getHeight() / 2;
         double v = Math.min(myCar.getSpeed(), carInFront.getSpeed());
 
         ax = 1;
 
-        double bxAdd = 1;
+        double bxAdd = 2.5 + myCar.getRnd()[0];
         double bx = bxAdd * Math.sqrt(v);
         abx = ax + bx;
 
-        double ex = 2;
+        double ex = 2 + myCar.getRnd()[1];
         sdx = ax + ex * bx;
 
-        double cx = 3;
+        double cx = 18 + myCar.getRnd()[2];
         sdv = Math.pow((deltaX - ax) / cx, 2);
 
-        cldv = sdv;
+        cldv = sdv * 1.1;
 
         opdv = cldv * -1.2;
 //        System.out.println(ax + " |abx| " + abx + " |sdx| " + sdx + " |sdv| " + sdv + " |cldv| " + cldv + " |opdv| " + opdv + "|| dx: " + deltaX + " dv: " + deltaV);
     }
 
-    private void decelerate() {
-        double b = Math.abs(0.3 * (rnd4 + nrnd));
+    private void decelerate(double scale) {
+        double b = Math.abs(scale * (0.5 + nrnd));
         System.out.println(myCar.getCarId() + ": " + b);
         myCar.slowDown(b);
     }

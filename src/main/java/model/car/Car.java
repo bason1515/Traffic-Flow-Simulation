@@ -53,10 +53,10 @@ public class Car extends LimitedMovingPoint {
 
     private void wiedemannParam() {
         ThreadLocalRandom rng = ThreadLocalRandom.current();
-        rnd[0] = rng.nextGaussian();
-        rnd[1] = rng.nextGaussian();
-        rnd[2] = rng.nextGaussian();
-        rnd[3] = rng.nextGaussian();
+        rnd[0] = rng.nextDouble() - 0.5;
+        rnd[1] = rng.nextDouble(0, 0.4) - 0.2;
+        rnd[2] = rng.nextDouble(0, 4) - 2;
+        rnd[3] = rng.nextDouble();
     }
 
     private double calculateRotation() {
