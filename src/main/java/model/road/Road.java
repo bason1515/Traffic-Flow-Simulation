@@ -20,6 +20,7 @@ public class Road extends Line {
     private final Long roadId;
 
     private Point2D direction;
+    private double lenght;
     private LinkedList<Car> onRoad;
     private List<Car> bufferOnRoad;
     private Road left = null;
@@ -33,6 +34,7 @@ public class Road extends Line {
         super(startX, startY, endX, endY);
         roadId = count++;
         direction = getEndPoint2D().subtract(getStartPoint2D()).normalize();
+        lenght = getStartPoint2D().distance(getEndPoint2D());
         onRoad = new LinkedList<>();
         bufferOnRoad = new ArrayList<>();
     }

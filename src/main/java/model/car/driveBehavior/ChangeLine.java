@@ -51,9 +51,9 @@ public class ChangeLine implements DriveStrategy {
     }
 
     private void checkIfEnded() {
-        Point2D transitEndPoint = transition.getEndPoint2D();
-        double distToEnd = transitEndPoint.distance(myCar.getPosition());
-        if (distToEnd <= 5) endTransition();
+        Point2D transitStartPoint = transition.getStartPoint2D();
+        double distToStart = transitStartPoint.distance(myCar.getPosition());
+        if (distToStart >= transition.getLenght()) endTransition();
     }
 
     private void endTransition() {

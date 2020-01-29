@@ -60,8 +60,8 @@ public class CarService {
         for (Road road : roadRepo.getAll()) {
             if (!road.getOnRoad().isEmpty()) {
                 Car car = road.getOnRoad().getLast();
-                double distToBorder = road.getEndPoint2D().distance(car.getPosition());
-                if (distToBorder < Road.LINE_OFFSET) { // end of road
+                double distToRoadStart = road.getStartPoint2D().distance(car.getPosition());
+                if (distToRoadStart >= road.getLenght()) {
                     deleteCar(car);
                 }
             }
