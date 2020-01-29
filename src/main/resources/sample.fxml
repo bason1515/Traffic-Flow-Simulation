@@ -43,6 +43,12 @@
             <Slider GridPane.columnIndex="1" GridPane.rowIndex="5" fx:id="maxTruckVeloSlider" min="10" max="140"
                     value="80" blockIncrement="5"/>
             <Label GridPane.columnIndex="2" GridPane.rowIndex="5" fx:id="maxTruckVeloLabel"/>
+
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="6" text="Timewarp:"/>
+            <Slider GridPane.columnIndex="1" GridPane.rowIndex="6" fx:id="timewarpSlider" min="1" max="5"
+                    value="1" blockIncrement="1"/>
+            <Label GridPane.columnIndex="2" GridPane.rowIndex="6" fx:id="timewarpLabel"/>
+
         </GridPane>
     </right>
 </BorderPane>

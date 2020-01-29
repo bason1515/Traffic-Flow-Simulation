@@ -33,9 +33,9 @@ public class Controller {
     @FXML
     private Button startButton;
     @FXML
-    private Slider spawnRateSlider, truckChanceSlider, maxAcceSlider, maxVeloSlider, maxTruckAcceSlider, maxTruckVeloSlider;
+    private Slider spawnRateSlider, truckChanceSlider, maxAcceSlider, maxVeloSlider, maxTruckAcceSlider, maxTruckVeloSlider, timewarpSlider;
     @FXML
-    private Label spawnRateLabel, truckChanceLabel, maxCarAcceLabel, maxCarVeloLabel, maxTruckAcceLabel, maxTruckVeloLabel;
+    private Label spawnRateLabel, truckChanceLabel, maxCarAcceLabel, maxCarVeloLabel, maxTruckAcceLabel, maxTruckVeloLabel, timewarpLabel;
 
     private CarService carService;
     private RoadService roadService;
@@ -91,13 +91,14 @@ public class Controller {
         formatSliderDecimalValue(df, truckChanceSlider);
         df = new DecimalFormat("#.#");
         formatSliderDecimalValue(df, maxAcceSlider, maxTruckAcceSlider);
-        slidersValueToInt(spawnRateSlider, maxVeloSlider, maxTruckVeloSlider);
+        slidersValueToInt(spawnRateSlider, maxVeloSlider, maxTruckVeloSlider, timewarpSlider);
         bindLabelToSlider(spawnRateLabel, spawnRateSlider);
         bindLabelToSlider(truckChanceLabel, truckChanceSlider);
         bindLabelToSlider(maxCarAcceLabel, maxAcceSlider);
         bindLabelToSlider(maxCarVeloLabel, maxVeloSlider);
         bindLabelToSlider(maxTruckAcceLabel, maxTruckAcceSlider);
         bindLabelToSlider(maxTruckVeloLabel, maxTruckVeloSlider);
+        bindLabelToSlider(timewarpLabel, timewarpSlider);
         bindSlidersToSpawner();
     }
 
@@ -143,6 +144,7 @@ public class Controller {
             public void handle(long timestamp) {
                 if (lastUpdateTime.get() > 0) {
                     long elapsedTime = timestamp - lastUpdateTime.get();
+                    elapsedTime *= timewarpSlider.getValue();
                     roadObjectService.updateRoadObjects(elapsedTime);
                     carService.updateCars(elapsedTime);
                 }
