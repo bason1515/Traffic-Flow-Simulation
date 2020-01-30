@@ -30,23 +30,23 @@ public class CarCounter {
     public CarCounter(Road road) {
         refreshSec = 5;
         view = new Group();
-        initLine(road);
+        initLane(road);
         initLabel();
     }
 
-    private void initLine(Road road) {
-        List<Road> monitoredRoads = road.getAllLines();
+    private void initLane(Road road) {
+        List<Road> monitoredRoads = road.getAllLanes();
         Road firstRoad = monitoredRoads.get(0);
         Road lastRoad = monitoredRoads.get(monitoredRoads.size() - 1);
         start = firstRoad.getStartPoint2D().midpoint(firstRoad.getEndPoint2D());
         end = lastRoad.getStartPoint2D().midpoint(lastRoad.getEndPoint2D());
-        offsetCounterLine();
+        offsetCounterLane();
         line = new Line(start.getX(), start.getY(),
                 end.getX(), end.getY());
         view.getChildren().add(line);
     }
 
-    private void offsetCounterLine() {
+    private void offsetCounterLane() {
         Point2D size = start.subtract(end);
         start = start.add(size);
         end = end.add(size.multiply(-1));
@@ -73,14 +73,14 @@ public class CarCounter {
 
     private boolean isCarCrossingCounter(Car car) {
         Point2D distanceTraveled = car.getVelocity().multiply(elapsedSeconds);
-        return linesIntersect(
+        return lanesIntersect(
                 car.getPosition(),
                 car.getPosition().add(distanceTraveled),
                 start,
                 end);
     }
 
-    private boolean linesIntersect(Point2D p1, Point2D p2, Point2D p3, Point2D p4) {
+    private boolean lanesIntersect(Point2D p1, Point2D p2, Point2D p3, Point2D p4) {
         double x1 = p1.getX();
         double y1 = p1.getY();
         double x2 = p2.getX();

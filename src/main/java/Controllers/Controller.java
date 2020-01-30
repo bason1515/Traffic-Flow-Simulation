@@ -26,7 +26,7 @@ import java.text.DecimalFormat;
 import java.util.Timer;
 
 public class Controller {
-    private static final int LINE_NUMBER = 3;
+    private static final int LANE_NUMBER = 3;
 
     @FXML
     private Pane sim;
@@ -73,7 +73,7 @@ public class Controller {
 
     private void roadsInit() {
         Road road1 = new Road(50, 50, 800, 600);
-        roadService.addLinesToRoad(road1, LINE_NUMBER);
+        roadService.addLanesToRoad(road1, LANE_NUMBER);
         roadService.addRoad(road1);
         sim.getChildren().addAll(roadService.getRoadRepo().getAll());
     }

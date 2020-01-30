@@ -14,7 +14,7 @@ import java.util.ListIterator;
 @Getter
 @Setter
 public class Road extends Line {
-    public static final int LINE_OFFSET = 10;
+    public static final int LANE_OFFSET = 10;
 
     private static Long count = 1L;
     private final Long roadId;
@@ -64,20 +64,20 @@ public class Road extends Line {
         return angle >= 90;
     }
 
-    public void addLine() {
+    public void addLane() {
         if (left != null)
-            left.addLine();
-        else createNewLine();
+            left.addLane();
+        else createNewLane();
     }
 
-    private void createNewLine() {
-        Road newLine = createLineWithOffset();
-        connectToLeft(newLine);
+    private void createNewLane() {
+        Road newLane = createLaneWithOffset();
+        connectToLeft(newLane);
     }
 
-    private Road createLineWithOffset() {
+    private Road createLaneWithOffset() {
         Point2D offset = new Point2D(direction.getY(), direction.getX() * -1);
-        offset = offset.multiply(Road.LINE_OFFSET);
+        offset = offset.multiply(Road.LANE_OFFSET);
         return new Road(getStartPoint2D().add(offset), getEndPoint2D().add(offset));
     }
 
@@ -86,7 +86,7 @@ public class Road extends Line {
         setLeft(newRoad);
     }
 
-    public List<Road> getAllLines() {
+    public List<Road> getAllLanes() {
         List<Road> list = new ArrayList<>();
         inOrder(this, list);
         return list;
@@ -99,7 +99,7 @@ public class Road extends Line {
         list.add(focus);
     }
 
-    public Point2D getPointOnLine(double distFromStart) {
+    public Point2D getPointOnLane(double distFromStart) {
         return this.getDirection().multiply(distFromStart).add(this.getStartPoint2D());
     }
 

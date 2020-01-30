@@ -14,18 +14,18 @@ public class RoadService {
         this.roadRepo = roadRepository;
     }
 
-    public void addLinesToRoad(Road target, int amount) {
+    public void addLanesToRoad(Road target, int amount) {
         for (int i = 0; i < amount; i++) {
-            target.addLine();
+            target.addLane();
         }
     }
 
     public void addRoad(Road road) {
-        road.getAllLines().forEach(roadRepo::save);
+        road.getAllLanes().forEach(roadRepo::save);
     }
 
     public void removeRoad(Long id) {
-        roadRepo.byId(id).getAllLines().forEach(r -> roadRepo.remove(r.getRoadId()));
+        roadRepo.byId(id).getAllLanes().forEach(r -> roadRepo.remove(r.getRoadId()));
     }
 
 }

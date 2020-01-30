@@ -10,12 +10,12 @@ public class Driver {
     private Car myCar;
     private Car carInFront;
     private DriveOnRoad driveOnRoad;
-    private ChangeLine changeLine;
+    private ChangeLane changeLane;
 
     public Driver(Car myCar) {
         this.myCar = myCar;
         this.driveOnRoad = new DriveOnRoad(myCar);
-        this.changeLine = new ChangeLine(myCar);
+        this.changeLane = new ChangeLane(myCar);
     }
 
     public void drive(Car carInFront) {
@@ -24,14 +24,14 @@ public class Driver {
     }
 
     private void findBestStrategy() {
-        if (!changeLine.checkIfEnded()) driveOnRoad.drive(carInFront);
+        if (!changeLane.checkIfEnded()) driveOnRoad.drive(carInFront);
         Road rightRoad = myCar.getCurrentRoad().getRight();
         Road leftRoad = myCar.getCurrentRoad().getLeft();
         CarStatus status = driveOnRoad.getStatus();
-        if (changeLine.shouldChangeToRight()) {
-            changeLine.initTransition(rightRoad);
-        } else if (changeLine.shouldOvertake())
-            changeLine.initTransition(leftRoad);
+        if (changeLane.shouldChangeToRight()) {
+            changeLane.initTransition(rightRoad);
+        } else if (changeLane.shouldOvertake())
+            changeLane.initTransition(leftRoad);
         driveOnRoad.drive(carInFront);
     }
 

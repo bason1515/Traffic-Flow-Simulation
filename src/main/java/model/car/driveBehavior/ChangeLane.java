@@ -7,14 +7,15 @@ import model.road.Road;
 
 import java.util.Optional;
 
-public class ChangeLine {
+public class ChangeLane {
     private Road target;
     @Getter
     private Road transition;
     private Car myCar;
     private boolean ended = true;
+    private double points;
 
-    public ChangeLine(Car myCar) {
+    public ChangeLane(Car myCar) {
         this.myCar = myCar;
     }
 
@@ -23,15 +24,15 @@ public class ChangeLine {
         Road leftRoad = myCar.getCurrentRoad().getLeft();
         Optional<Car> carInFront = Optional.ofNullable(myCar.getDriver().getCarInFront());
         boolean canGoFaster = carInFront.filter(c -> myCar.getLimits().getMaxVel() > c.getSpeed()).isPresent();
-        return canChangeLine(leftRoad) && canGoFaster;
+        return canChangeLane(leftRoad) && canGoFaster;
     }
 
     public boolean shouldChangeToRight() {
         Road rightRoad = myCar.getCurrentRoad().getRight();
-        return canChangeLine(rightRoad);
+        return canChangeLane(rightRoad);
     }
 
-    private boolean canChangeLine(Road target) {
+    private boolean canChangeLane(Road target) {
         if (target == null) return false;
         boolean isThereACar = target.getOnRoad().stream()
                 .anyMatch(c -> c.getPosition().distance(myCar.getPosition()) < 50);
@@ -47,7 +48,7 @@ public class ChangeLine {
     private void createTransition() {
         Point2D position = myCar.getPosition();
         double distance = myCar.getCurrentRoad().getStartPoint2D().subtract(position).magnitude();
-        Point2D targetPoint = target.getPointOnLine(distance + myCar.getSpeed());
+        Point2D targetPoint = target.getPointOnLane(distance + myCar.getSpeed());
         transition = new Road(position, targetPoint);
     }
 
