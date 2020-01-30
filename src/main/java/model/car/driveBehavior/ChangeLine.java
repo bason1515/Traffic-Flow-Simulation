@@ -1,23 +1,45 @@
 package model.car.driveBehavior;
 
 import javafx.geometry.Point2D;
+import lombok.Getter;
 import model.car.Car;
 import model.road.Road;
 
-public class ChangeLine implements DriveStrategy {
-    private DriveOnRoad driveOnRoad;
+import java.util.Optional;
+
+public class ChangeLine {
     private Road target;
+    @Getter
     private Road transition;
     private Car myCar;
-    private boolean ended = false;
+    private boolean ended = true;
 
-    public ChangeLine(Car myCar, Road target) {
+    public ChangeLine(Car myCar) {
         this.myCar = myCar;
-        this.target = target;
-        initTransition();
     }
 
-    private void initTransition() {
+    public boolean shouldOvertake() {
+        if(myCar.getDriver().getDriveOnRoad().getStatus() == CarStatus.FREE) return false;
+        Road leftRoad = myCar.getCurrentRoad().getLeft();
+        Optional<Car> carInFront = Optional.ofNullable(myCar.getDriver().getCarInFront());
+        boolean canGoFaster = carInFront.filter(c -> myCar.getLimits().getMaxVel() > c.getSpeed()).isPresent();
+        return canChangeLine(leftRoad) && canGoFaster;
+    }
+
+    public boolean shouldChangeToRight() {
+        Road rightRoad = myCar.getCurrentRoad().getRight();
+        return canChangeLine(rightRoad);
+    }
+
+    private boolean canChangeLine(Road target) {
+        if (target == null) return false;
+        boolean isThereACar = target.getOnRoad().stream()
+                .anyMatch(c -> c.getPosition().distance(myCar.getPosition()) < 50);
+        return !isThereACar;
+    }
+
+    public void initTransition(Road target) {
+        this.target = target;
         createTransition();
         changeRoad();
     }
@@ -34,31 +56,22 @@ public class ChangeLine implements DriveStrategy {
         target.addOnRoad(myCar);
         myCar.setCurrentRoad(target);
         myCar.setVelocity(transition.getDirection().multiply(myCar.getSpeed()));
+        myCar.getDriver().getDriveOnRoad().setDrivenRoad(transition);
+        ended = false;
     }
 
-    @Override
-    public DriveStrategy driveCar(Car carInFront) {
-        driveOnRoad = new DriveOnRoad(myCar, carInFront);
-        driveOnRoad.setDrivenRoad(transition);
-        driveOnRoad.drive();
-        checkIfEnded();
-        return ended ? DriveStrategyDecider.getBestStrategy(myCar, carInFront) : this;
-    }
-
-    private void driveOnTransition() {
-
-        myCar.accelerate(transition.getDirection());
-    }
-
-    private void checkIfEnded() {
+    public boolean checkIfEnded() {
+        if(ended) return true;
         Point2D transitStartPoint = transition.getStartPoint2D();
         double distToStart = transitStartPoint.distance(myCar.getPosition());
         if (distToStart >= transition.getLenght()) endTransition();
+        return ended;
     }
 
     private void endTransition() {
         myCar.setPosition(transition.getEndPoint2D());
         myCar.setVelocity(myCar.getCurrentRoad().getDirection().multiply(myCar.getSpeed()));
+        myCar.getDriver().getDriveOnRoad().setDrivenRoad(myCar.getCurrentRoad());
         ended = true;
     }
 

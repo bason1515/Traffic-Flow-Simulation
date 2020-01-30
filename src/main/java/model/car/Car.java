@@ -6,8 +6,7 @@ import javafx.scene.shape.Rectangle;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import model.car.driveBehavior.DriveOnRoad;
-import model.car.driveBehavior.DriveStrategy;
+import model.car.driveBehavior.Driver;
 import model.road.Road;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -22,7 +21,7 @@ public class Car extends LimitedMovingPoint {
     private final Long carId;
 
     private CarType type;
-    private DriveStrategy driver;
+    private Driver driver;
     private Road currentRoad;
     private Rectangle view;
 
@@ -31,7 +30,7 @@ public class Car extends LimitedMovingPoint {
     private final double[] rnd = new double[4];
 
     public void performDrive(Car carInFront) {
-        driver = driver.driveCar(carInFront);
+        driver.drive(carInFront);
     }
 
     public Car(Point2D position, Limitation carLimits, double width, double height, Road currentRoad) {
@@ -39,7 +38,7 @@ public class Car extends LimitedMovingPoint {
         carId = count++;
         this.type = CarType.CAR;
         this.currentRoad = currentRoad;
-        this.driver = new DriveOnRoad(this, null);
+        this.driver = new Driver(this);
         this.view = new Rectangle(getX(), getY(), width, height);
         bindings();
         wiedemannParam();

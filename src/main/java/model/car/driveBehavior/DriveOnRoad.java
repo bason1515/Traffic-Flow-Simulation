@@ -2,18 +2,21 @@ package model.car.driveBehavior;
 
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
+import lombok.Getter;
 import lombok.Setter;
 import model.car.Car;
 import model.road.Road;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-public class DriveOnRoad implements DriveStrategy {
+public class DriveOnRoad {
     private static ThreadLocalRandom rng = ThreadLocalRandom.current();
     @Setter
     private Road drivenRoad;
     private Car myCar;
     private Car carInFront;
+    @Getter
+    private CarStatus status;
 
     private double deltaX;
     private double deltaV;
@@ -27,44 +30,43 @@ public class DriveOnRoad implements DriveStrategy {
     private double cldv;
     private double opdv;
 
-    public DriveOnRoad(Car myCar, Car carInFront) {
+    public DriveOnRoad(Car myCar) {
         this.myCar = myCar;
-        this.carInFront = carInFront;
         this.drivenRoad = myCar.getCurrentRoad();
+        status = CarStatus.FREE;
     }
 
-    @Override
-    public DriveStrategy driveCar(Car carInFront) {
-        drive();
-        return DriveStrategyDecider.getBestStrategy(myCar, carInFront);
+    public void drive(Car carInFront) {
+        this.carInFront = carInFront;
+        performAction();
     }
 
-    public void drive() {
+    private void performAction() {
         if (carInFront != null) {
             calculateParameters();
-            // Emergency
             if (deltaX < abx) {
+                status = CarStatus.BREAK;
                 decelerate(0.7);
                 myCar.getView().setFill(Color.RED);
-                // Collision
                 if (deltaX <= 0.5) {
+                    status = CarStatus.COLLISION;
                     myCar.setVelocity(Point2D.ZERO);
                 }
-            }
-            // Closing in
-            else if (deltaV > sdv) {
+            } else if (deltaV > sdv) {
+                status = CarStatus.CLOSING_IN;
                 if (deltaV > cldv)
                     decelerate(0.3);
                 myCar.getView().setFill(Color.YELLOW);
-            }
-            // Following
-            else if (deltaV < opdv || deltaX > sdx) {
+            } else if (deltaV < opdv || deltaX > sdx) {
+                status = CarStatus.FREE;
                 freeDrive(drivenRoad);
                 myCar.getView().setFill(Color.GREEN);
             } else {
+                status = CarStatus.FOLLOW;
                 myCar.getView().setFill(Color.BLUE);
             }
         } else {
+            status = CarStatus.FREE;
             myCar.getView().setFill(Color.BLACK);
             freeDrive(drivenRoad);
         }
@@ -103,7 +105,6 @@ public class DriveOnRoad implements DriveStrategy {
         cldv = sdv * 1.1;
 
         opdv = cldv * -1.2;
-//        System.out.println(ax + " |abx| " + abx + " |sdx| " + sdx + " |sdv| " + sdv + " |cldv| " + cldv + " |opdv| " + opdv + "|| dx: " + deltaX + " dv: " + deltaV);
     }
 
     private void decelerate(double scale) {
@@ -113,6 +114,12 @@ public class DriveOnRoad implements DriveStrategy {
 
     private void freeDrive(Road target) {
         myCar.accelerate(target.getDirection());
+    }
+
+    @Override
+    public String toString() {
+        return ax + " |abx| " + abx + " |sdx| " + sdx + " |sdv| " + sdv + " |cldv| " +
+                cldv + " |opdv| " + opdv + "|| dx: " + deltaX + " dv: " + deltaV;
     }
 
 }
