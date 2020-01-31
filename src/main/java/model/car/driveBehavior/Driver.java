@@ -1,9 +1,10 @@
 package model.car.driveBehavior;
 
-import javafx.geometry.Point2D;
 import lombok.Getter;
 import model.car.Car;
 import model.road.Road;
+
+import java.util.Optional;
 
 @Getter
 public class Driver {
@@ -25,30 +26,13 @@ public class Driver {
 
     private void findBestStrategy() {
         if (!changeLane.checkIfEnded()) driveOnRoad.drive(carInFront);
-        Road rightRoad = myCar.getCurrentRoad().getRight();
-        Road leftRoad = myCar.getCurrentRoad().getLeft();
-        CarStatus status = driveOnRoad.getStatus();
+        Optional<Road> rightRoad = myCar.getCurrentRoad().getRight();
+        Optional<Road> leftRoad = myCar.getCurrentRoad().getLeft();
         if (changeLane.shouldChangeToRight()) {
-            changeLane.initTransition(rightRoad);
+            rightRoad.ifPresent(changeLane::initTransition);
         } else if (changeLane.shouldOvertake())
-            changeLane.initTransition(leftRoad);
+            leftRoad.ifPresent(changeLane::initTransition);
         driveOnRoad.drive(carInFront);
-    }
-
-    private boolean isCarInFront() {
-        return carInFront != null;
-    }
-
-    private boolean isSafeGap(double safeGap) {
-        return !isCarInFront() || distanceToCollision() > safeGap;
-    }
-
-    private double distanceToCollision() {
-        Point2D carPos = myCar.getPosition();
-        Point2D carInFrontPos = carInFront.getPosition();
-        double distanceBetween = carPos.distance(carInFrontPos);
-        double carsLength = (myCar.getHeight() / 2) + (carInFront.getHeight() / 2);
-        return distanceBetween - carsLength;
     }
 
 }

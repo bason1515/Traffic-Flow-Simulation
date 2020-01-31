@@ -13,27 +13,26 @@ public class ChangeLane {
     private Road transition;
     private Car myCar;
     private boolean ended = true;
-    private double points;
 
     public ChangeLane(Car myCar) {
         this.myCar = myCar;
     }
 
     public boolean shouldOvertake() {
-        if(myCar.getDriver().getDriveOnRoad().getStatus() == CarStatus.FREE) return false;
-        Road leftRoad = myCar.getCurrentRoad().getLeft();
+        if (myCar.getDriver().getDriveOnRoad().getStatus() == CarStatus.FREE) return false;
+        Optional<Road> leftRoad = myCar.getCurrentRoad().getLeft();
         Optional<Car> carInFront = Optional.ofNullable(myCar.getDriver().getCarInFront());
+        boolean canChangeLane = leftRoad.map(this::canChangeLane).orElse(false);
         boolean canGoFaster = carInFront.filter(c -> myCar.getLimits().getMaxVel() > c.getSpeed()).isPresent();
-        return canChangeLane(leftRoad) && canGoFaster;
+        return canChangeLane && canGoFaster;
     }
 
     public boolean shouldChangeToRight() {
-        Road rightRoad = myCar.getCurrentRoad().getRight();
-        return canChangeLane(rightRoad);
+        Optional<Road> rightRoad = myCar.getCurrentRoad().getRight();
+        return rightRoad.map(this::canChangeLane).orElse(false);
     }
 
     private boolean canChangeLane(Road target) {
-        if (target == null) return false;
         boolean isThereACar = target.getOnRoad().stream()
                 .anyMatch(c -> c.getPosition().distance(myCar.getPosition()) < 50);
         return !isThereACar;
@@ -62,10 +61,10 @@ public class ChangeLane {
     }
 
     public boolean checkIfEnded() {
-        if(ended) return true;
+        if (ended) return true;
         Point2D transitStartPoint = transition.getStartPoint2D();
         double distToStart = transitStartPoint.distance(myCar.getPosition());
-        if (distToStart >= transition.getLenght()) endTransition();
+        if (distToStart >= transition.getLength()) endTransition();
         return ended;
     }
 

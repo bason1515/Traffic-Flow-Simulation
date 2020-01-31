@@ -6,10 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import model.car.Car;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
 @Getter
 @Setter
@@ -20,7 +17,7 @@ public class Road extends Line {
     private final Long roadId;
 
     private Point2D direction;
-    private double lenght;
+    private double length;
     private LinkedList<Car> onRoad;
     private List<Car> bufferOnRoad;
     private Road left = null;
@@ -34,7 +31,7 @@ public class Road extends Line {
         super(startX, startY, endX, endY);
         roadId = count++;
         direction = getEndPoint2D().subtract(getStartPoint2D()).normalize();
-        lenght = getStartPoint2D().distance(getEndPoint2D());
+        length = getStartPoint2D().distance(getEndPoint2D());
         onRoad = new LinkedList<>();
         bufferOnRoad = new ArrayList<>();
     }
@@ -93,9 +90,7 @@ public class Road extends Line {
     }
 
     private void inOrder(Road focus, List<Road> list) {
-        if (focus.getLeft() != null) {
-            inOrder(focus.getLeft(), list);
-        }
+        focus.getLeft().ifPresent(road -> inOrder(road, list));
         list.add(focus);
     }
 
@@ -123,6 +118,14 @@ public class Road extends Line {
 
     public Point2D getDriveDirection() {
         return direction;
+    }
+
+    public Optional<Road> getLeft() {
+        return Optional.ofNullable(left);
+    }
+
+    public Optional<Road> getRight() {
+        return Optional.ofNullable(right);
     }
 
 }

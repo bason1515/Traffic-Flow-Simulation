@@ -61,7 +61,7 @@ public class CarService {
             if (!road.getOnRoad().isEmpty()) {
                 Car car = road.getOnRoad().getLast();
                 double distToRoadStart = road.getStartPoint2D().distance(car.getPosition());
-                if (distToRoadStart >= road.getLenght()) {
+                if (distToRoadStart >= road.getLength()) {
                     deleteCar(car);
                 }
             }
