@@ -115,8 +115,8 @@ public class Road extends Line {
     }
 
     private void inOrderLeft(Road focus, List<Road> list) {
-        focus.getLeft().ifPresent(road -> inOrderLeft(road, list));
         list.add(focus);
+        focus.getLeft().ifPresent(road -> inOrderLeft(road, list));
     }
 
     private void inOrderRight(Road focus, List<Road> list) {
