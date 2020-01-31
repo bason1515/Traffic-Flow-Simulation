@@ -61,18 +61,19 @@ public class Road extends Line {
         return angle >= 90;
     }
 
-    public void addLane() {
-        if (left != null)
-            left.addLane();
-        else createNewLane();
+    public void addLaneToLeft() {
+        Road target = left;
+        if (target != null)
+            target.addLaneToLeft();
+        else createLeftLane();
     }
 
-    private void createNewLane() {
-        Road newLane = createLaneWithOffset();
+    private void createLeftLane() {
+        Road newLane = createLeftLaneWithOffset();
         connectToLeft(newLane);
     }
 
-    private Road createLaneWithOffset() {
+    private Road createLeftLaneWithOffset() {
         Point2D offset = new Point2D(direction.getY(), direction.getX() * -1);
         offset = offset.multiply(Road.LANE_OFFSET);
         return new Road(getStartPoint2D().add(offset), getEndPoint2D().add(offset));
@@ -83,14 +84,43 @@ public class Road extends Line {
         setLeft(newRoad);
     }
 
+    public void addLaneToRight() {
+        Road target = right;
+        if (target != null)
+            target.addLaneToRight();
+        else createRightLane();
+    }
+
+    private void createRightLane() {
+        Road newLane = createRightLaneWithOffset();
+        connectToRight(newLane);
+    }
+
+    private Road createRightLaneWithOffset() {
+        Point2D offset = new Point2D(direction.getY(), direction.getX() * -1);
+        offset = offset.multiply(Road.LANE_OFFSET * -1);
+        return new Road(getStartPoint2D().add(offset), getEndPoint2D().add(offset));
+    }
+
+    private void connectToRight(Road newRoad) {
+        newRoad.setLeft(this);
+        setRight(newRoad);
+    }
+
     public List<Road> getAllLanes() {
         List<Road> list = new ArrayList<>();
-        inOrder(this, list);
+        inOrderRight(this, list);
+        getLeft().ifPresent(l -> inOrderLeft(l, list));
         return list;
     }
 
-    private void inOrder(Road focus, List<Road> list) {
-        focus.getLeft().ifPresent(road -> inOrder(road, list));
+    private void inOrderLeft(Road focus, List<Road> list) {
+        focus.getLeft().ifPresent(road -> inOrderLeft(road, list));
+        list.add(focus);
+    }
+
+    private void inOrderRight(Road focus, List<Road> list) {
+        focus.getRight().ifPresent(road -> inOrderRight(road, list));
         list.add(focus);
     }
 

@@ -23,9 +23,9 @@ public class RoadObjectService {
         carCounter = new CarCounter(road);
     }
 
-    public void createVehicleSpawner(Road... roads) {
+    public void createVehicleSpawner(Road road) {
         spawner = new VehicleSpawner(carRepository);
-        spawner.addRoads(roads);
+        spawner.addRoad(road);
     }
 
     public void updateRoadObjects(long elapsedTime) {

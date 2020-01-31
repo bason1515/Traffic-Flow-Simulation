@@ -84,8 +84,8 @@ public class VehicleSpawner {
         return ThreadLocalRandom.current().nextDouble() <= getTruckChance();
     }
 
-    public void addRoads(Road... roads) {
-        this.roads.addAll(Arrays.asList(roads));
+    public void addRoad(Road road) {
+        this.roads.addAll(road.getAllLanes());
     }
 
     public void removeRoads(Road... roads) {

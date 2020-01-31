@@ -10,6 +10,7 @@ import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
+import javafx.geometry.Point2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
@@ -78,10 +79,20 @@ public class Controller {
         sim.getChildren().addAll(roadService.getRoadRepo().getAll());
     }
 
+    private void initRamp(){
+        Road target = roadService.getRoadRepo().getAll().stream()
+                .filter(road -> !road.getRight().isPresent())
+                .findFirst()
+                .orElse(roadService.getRoadRepo().byId(1L));
+//        target.add
+        Point2D endOfRamp = target.getStartPoint2D().midpoint(target.getEndPoint2D());
+//        Point2D start
+    }
+
     private void roadObjectsInit() {
         Road road = roadService.getRoadRepo().byId(1L);
         roadObjectService.createCarCounter(road);
-        roadObjectService.createVehicleSpawner(roadService.getRoadRepo().getAll().toArray(new Road[0]));
+        roadObjectService.createVehicleSpawner(roadService.getRoadRepo().byId(1L));
         addSpawnerGui();
         sim.getChildren().addAll(roadObjectService.getAllViews());
     }

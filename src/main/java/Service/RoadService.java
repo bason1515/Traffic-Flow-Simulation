@@ -16,7 +16,7 @@ public class RoadService {
 
     public void addLanesToRoad(Road target, int amount) {
         for (int i = 0; i < amount; i++) {
-            target.addLane();
+            target.addLaneToLeft();
         }
     }
 

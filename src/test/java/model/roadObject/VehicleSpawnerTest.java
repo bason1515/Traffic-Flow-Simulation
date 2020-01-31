@@ -15,7 +15,7 @@ class VehicleSpawnerTest {
     void setUp() {
         road = new Road(0, 0, 50, 50);
         spawner = new VehicleSpawner(new CarRepositoryImpl());
-        spawner.addRoads(road);
+        spawner.addRoad(road);
         spawner.setVehiclePerHour(3600);
     }
 
@@ -46,7 +46,8 @@ class VehicleSpawnerTest {
     void shouldNotSpawnOnAllRoads() {
         Road road2 = new Road(1, 1, 2, 2);
         Road road3 = new Road(3, 3, 4, 4);
-        spawner.addRoads(road2, road3);
+        spawner.addRoad(road2);
+        spawner.addRoad(road3);
         spawner.update(2);
         assertEquals(1, road.getOnRoad().size());
         assertEquals(1, road2.getOnRoad().size());
@@ -57,7 +58,8 @@ class VehicleSpawnerTest {
     void shouldNotSpawnIfNoEmptyRoad() {
         Road road2 = new Road(1, 1, 2, 2);
         Road road3 = new Road(3, 3, 4, 4);
-        spawner.addRoads(road2, road3);
+        spawner.addRoad(road2);
+        spawner.addRoad(road3);
         spawner.update(2);
         spawner.update(2);
         assertEquals(1, road.getOnRoad().size());
