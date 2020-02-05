@@ -8,7 +8,6 @@ import model.road.Road;
 import repository.CarRepository;
 import repository.RoadRepository;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.stream.Collectors;
@@ -44,16 +43,22 @@ public class CarService {
     }
 
     private void driveCarsOnRoad(Road road) {
-        LinkedList<Car> onRoadClone = (LinkedList<Car>) road.getOnRoad().clone();
-        ListIterator<Car> carIterable = onRoadClone.listIterator();
+        updateCarsInFront(road);
+        for (int i = 0; i < road.getOnRoad().size(); i++) {
+            road.getOnRoad().get(i).performDrive();
+        }
+    }
+
+    private void updateCarsInFront(Road road) {
+        ListIterator<Car> carIterable = road.getOnRoad().listIterator();
         if (!carIterable.hasNext()) return;
         Car currentCar = carIterable.next();
         while (carIterable.hasNext()) {
             Car carInFront = carIterable.next();
-            currentCar.performDrive(carInFront);
+            currentCar.setCarInFront(carInFront);
             currentCar = carInFront;
         }
-        currentCar.performDrive(null);
+        currentCar.setCarInFront(null);
     }
 
     private void applyRoadBorder() {

@@ -24,12 +24,13 @@ public class Car extends LimitedMovingPoint {
     private Driver driver;
     private Road currentRoad;
     private Rectangle view;
+    private Car carInFront;
 
     // Wiedemann driver dependent parameters
     @Setter(AccessLevel.NONE)
     private final double[] rnd = new double[4];
 
-    public void performDrive(Car carInFront) {
+    public void performDrive() {
         driver.drive(carInFront);
     }
 
