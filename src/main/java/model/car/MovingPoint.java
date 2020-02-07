@@ -5,31 +5,36 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Point2D;
+import lombok.Getter;
+import lombok.Setter;
 
 public class MovingPoint {
-    private DoubleProperty x, y, xVelocity, yVelocity;
+    private DoubleProperty x, y, xVelocity;
     private ReadOnlyDoubleWrapper speed;
+    @Setter
+    @Getter
+    private Point2D direction;
 
-    public MovingPoint(Point2D startingPoint) {
-        this(startingPoint, Point2D.ZERO);
+    public MovingPoint(Point2D startingPoint, Point2D direction) {
+        this(startingPoint, Point2D.ZERO, direction);
     }
 
-    public MovingPoint(Point2D startingPoint, Point2D startingVelocity) {
+    public MovingPoint(Point2D startingPoint, Point2D startingVelocity, Point2D direction) {
         this.x = new SimpleDoubleProperty(this, "x", startingPoint.getX());
         this.y = new SimpleDoubleProperty(this, "y", startingPoint.getY());
         this.xVelocity = new SimpleDoubleProperty(this, "xVelocity", startingVelocity.getX());
-        this.yVelocity = new SimpleDoubleProperty(this, "yVelocity", startingVelocity.getY());
         this.speed = new ReadOnlyDoubleWrapper(this, "speed");
+        this.direction = direction;
         applyBinds();
     }
 
     private void applyBinds() {
-        speed.bind(Bindings.createDoubleBinding(() -> this.getVelocity().magnitude(), this.xVelocity, this.yVelocity));
+        speed.bind(Bindings.createDoubleBinding(this::getxVelocity, this.xVelocity));
     }
 
     public void applyVelocityToPosition(double elapsedSeconds) {
-        Point2D distTraveled = getVelocity().multiply(elapsedSeconds);
-        setPosition(getPosition().add(distTraveled));
+        double distTraveled = getSpeed() * elapsedSeconds;
+        setPosition(getPosition().add(direction.multiply(distTraveled)));
     }
 
     public Point2D getPosition() {
@@ -41,13 +46,12 @@ public class MovingPoint {
         this.setY(position.getY());
     }
 
-    public Point2D getVelocity() {
-        return new Point2D(this.getxVelocity(), this.getyVelocity());
+    public double getVelocity() {
+        return this.getxVelocity();
     }
 
-    public void setVelocity(Point2D position) {
-        this.setxVelocity(position.getX());
-        this.setyVelocity(position.getY());
+    public void setVelocity(double v) {
+        this.setxVelocity(v);
     }
 
     public double getX() {
@@ -84,18 +88,6 @@ public class MovingPoint {
 
     public void setxVelocity(double xVelocity) {
         this.xVelocity.set(xVelocity);
-    }
-
-    public double getyVelocity() {
-        return yVelocity.get();
-    }
-
-    public DoubleProperty yVelocityProperty() {
-        return yVelocity;
-    }
-
-    public void setyVelocity(double yVelocity) {
-        this.yVelocity.set(yVelocity);
     }
 
     public double getSpeed() {

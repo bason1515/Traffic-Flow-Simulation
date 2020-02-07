@@ -50,7 +50,7 @@ public class DriveOnRoad {
                 myCar.getView().setFill(Color.RED);
                 if (deltaX <= 0.5) {
                     status = CarStatus.COLLISION;
-                    myCar.setVelocity(Point2D.ZERO);
+                    myCar.setVelocity(0.0);
                 }
             } else if (deltaV > sdv) {
                 status = CarStatus.CLOSING_IN;
@@ -59,7 +59,7 @@ public class DriveOnRoad {
                 myCar.getView().setFill(Color.YELLOW);
             } else if (deltaV < opdv || deltaX > sdx) {
                 status = CarStatus.FREE;
-                freeDrive(drivenRoad);
+                freeDrive();
                 myCar.getView().setFill(Color.GREEN);
             } else {
                 status = CarStatus.FOLLOW;
@@ -68,7 +68,7 @@ public class DriveOnRoad {
         } else {
             status = CarStatus.FREE;
             myCar.getView().setFill(Color.BLACK);
-            freeDrive(drivenRoad);
+            freeDrive();
         }
     }
 
@@ -92,7 +92,7 @@ public class DriveOnRoad {
 
         ax = 1;
 
-        double bxAdd = 2.5 + myCar.getRnd()[0];
+        double bxAdd = 1.5 + myCar.getRnd()[0];
         double bx = bxAdd * Math.sqrt(v);
         abx = ax + bx;
 
@@ -108,12 +108,14 @@ public class DriveOnRoad {
     }
 
     private void decelerate(double scale) {
+        myCar.setDirection(drivenRoad.getDirection());
         double b = Math.abs(scale * (0.5 + nrnd));
-        myCar.slowDown(b);
+        myCar.slowDown();
     }
 
-    private void freeDrive(Road target) {
-        myCar.accelerate(target.getDirection());
+    private void freeDrive() {
+        myCar.setDirection(drivenRoad.getDirection());
+        myCar.accelerate();
     }
 
     @Override

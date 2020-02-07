@@ -13,23 +13,29 @@ public class ChangeLane {
     private Road transition;
     private Car myCar;
     private boolean ended = true;
+    private GapAcceptanceModel gapModel;
 
     public ChangeLane(Car myCar) {
         this.myCar = myCar;
+        gapModel = new GapAcceptanceModel(myCar);
     }
 
     public boolean shouldOvertake() {
         if (myCar.getDriver().getDriveOnRoad().getStatus() == CarStatus.FREE) return false;
         Optional<Road> leftRoad = myCar.getCurrentRoad().getLeft();
-        Optional<Car> carInFront = Optional.ofNullable(myCar.getDriver().getCarInFront());
-        boolean canChangeLane = leftRoad.map(this::canChangeLane).orElse(false);
-        boolean canGoFaster = carInFront.filter(c -> myCar.getLimits().getMaxVel() > c.getSpeed()).isPresent();
-        return canChangeLane && canGoFaster;
+        double myMaxV = myCar.getLimits().getMaxVel();
+        boolean canGoFaster = myMaxV - myCar.getSpeed() > 1;
+        boolean gap = gapModel.isLeftLineAccepted();
+        return gap && canGoFaster;
     }
 
     public boolean shouldChangeToRight() {
         Optional<Road> rightRoad = myCar.getCurrentRoad().getRight();
-        return rightRoad.map(this::canChangeLane).orElse(false);
+        boolean gap = gapModel.isRightLineAccepted();
+        double myMaxV = myCar.getLimits().getMaxVel();
+        boolean toSlow = gapModel.getLead().map(lead -> myMaxV - lead.getSpeed() >= 3).orElse(false);
+        return gap && !toSlow;
+//        return gapModel.isRightLineAccepted();
     }
 
     private boolean canChangeLane(Road target) {
@@ -39,6 +45,7 @@ public class ChangeLane {
     }
 
     public void initTransition(Road target) {
+        System.out.println("Init tran ");
         this.target = target;
         createTransition();
         changeRoad();
@@ -55,7 +62,7 @@ public class ChangeLane {
         myCar.getCurrentRoad().removeOnRoad(myCar);
         target.addOnRoad(myCar);
         myCar.setCurrentRoad(target);
-        myCar.setVelocity(transition.getDirection().multiply(myCar.getSpeed()));
+        myCar.setDirection(transition.getDirection());
         myCar.getDriver().getDriveOnRoad().setDrivenRoad(transition);
         ended = false;
     }
@@ -70,7 +77,7 @@ public class ChangeLane {
 
     private void endTransition() {
         myCar.setPosition(transition.getEndPoint2D());
-        myCar.setVelocity(myCar.getCurrentRoad().getDirection().multiply(myCar.getSpeed()));
+        myCar.setDirection(myCar.getCurrentRoad().getDirection());
         myCar.getDriver().getDriveOnRoad().setDrivenRoad(myCar.getCurrentRoad());
         ended = true;
     }

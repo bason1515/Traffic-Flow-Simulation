@@ -9,6 +9,7 @@ import lombok.Setter;
 import model.car.driveBehavior.Driver;
 import model.road.Road;
 
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Getter
@@ -35,7 +36,7 @@ public class Car extends LimitedMovingPoint {
     }
 
     public Car(Point2D position, Limitation carLimits, double width, double height, Road currentRoad) {
-        super(position, carLimits);
+        super(position, carLimits,currentRoad.getDirection());
         carId = count++;
         this.type = CarType.CAR;
         this.currentRoad = currentRoad;
@@ -48,7 +49,7 @@ public class Car extends LimitedMovingPoint {
     private void bindings() {
         view.xProperty().bind(Bindings.createDoubleBinding(() -> getX() - view.getWidth() / 2, xProperty()));
         view.yProperty().bind(Bindings.createDoubleBinding(() -> getY() - view.getHeight() / 2, yProperty()));
-        view.rotateProperty().bind(Bindings.createDoubleBinding(this::calculateRotation, xVelocityProperty(), yVelocityProperty()));
+        view.rotateProperty().bind(Bindings.createDoubleBinding(this::calculateRotation, xVelocityProperty()));
     }
 
     private void wiedemannParam() {
@@ -60,7 +61,7 @@ public class Car extends LimitedMovingPoint {
     }
 
     private double calculateRotation() {
-        Point2D direction = this.getVelocity();
+        Point2D direction = getDirection();
         if (direction.equals(Point2D.ZERO)) direction = currentRoad.getDirection(); // TODO something better?
         // Point2D .angle doesn't distinguishes left or right
         if (getxVelocity() < 0)
@@ -88,8 +89,13 @@ public class Car extends LimitedMovingPoint {
         return view.getHeight();
     }
 
+    public Optional<Car> getCarInFront() {
+        return Optional.ofNullable(carInFront);
+    }
+
     @Override
     public String toString() {
         return String.format("Car %d [%.0f , %.0f]", carId, getX(), getY());
     }
+
 }

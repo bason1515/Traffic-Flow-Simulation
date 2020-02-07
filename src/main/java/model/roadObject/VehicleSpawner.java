@@ -31,8 +31,8 @@ public class VehicleSpawner {
     public VehicleSpawner(CarRepository carRepository) {
         this.carRepo = carRepository;
         roads = new ArrayList<>();
-        carLimits = new Limitation(1.5, -1.5, 80);
-        truckLimits = new Limitation(1, -1, 60);
+        carLimits = new Limitation(1.5, -3, 80);
+        truckLimits = new Limitation(1, -2, 60);
         vehiclePerHour = new SimpleIntegerProperty(this, "vehiclePerHour", 0);
         spawnRate = new ReadOnlyDoubleWrapper(this, "spawnRate");
         truckChance = new SimpleDoubleProperty(this, "truckChance", 0.10);
@@ -69,13 +69,17 @@ public class VehicleSpawner {
         if (road.getOnRoad().isEmpty()) return true;
         Car closestCar = road.getOnRoad().getFirst();
         double distance = road.getStartPoint2D().distance(closestCar.getPosition());
-        return distance > 10;
+        return distance > 30;
     }
 
     private void createVehicleOnRoad(Road road) {
         Car car;
-        if (shouldISpawnTruck()) car = new Car(road.getStartPoint2D(), truckLimits, 5, 20, road);
-        else car = new Car(road.getStartPoint2D(), carLimits, 5, 8, road);
+        if (shouldISpawnTruck()) car = new Car(road.getStartPoint2D(), new Limitation(truckLimits), 5, 20, road);
+        else car = new Car(road.getStartPoint2D(), new Limitation(carLimits), 5, 8, road);
+        double startingV = Optional.ofNullable(road.getOnRoad().peekFirst())
+                .map(Car::getSpeed)
+                .orElse(car.getLimits().getMaxVel());
+        car.setVelocity(startingV);
         carRepo.save(car);
         road.addOnRoad(car);
     }

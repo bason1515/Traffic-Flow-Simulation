@@ -25,13 +25,14 @@ public class Driver {
     }
 
     private void findBestStrategy() {
-        if (!changeLane.checkIfEnded()) driveOnRoad.drive(carInFront);
-        Optional<Road> rightRoad = myCar.getCurrentRoad().getRight();
-        Optional<Road> leftRoad = myCar.getCurrentRoad().getLeft();
-        if (changeLane.shouldChangeToRight()) {
-            rightRoad.ifPresent(changeLane::initTransition);
-        } else if (changeLane.shouldOvertake())
-            leftRoad.ifPresent(changeLane::initTransition);
+        if (changeLane.checkIfEnded()) {
+            Optional<Road> rightRoad = myCar.getCurrentRoad().getRight();
+            Optional<Road> leftRoad = myCar.getCurrentRoad().getLeft();
+            if (changeLane.shouldChangeToRight()) {
+                rightRoad.ifPresent(changeLane::initTransition);
+            } else if (changeLane.shouldOvertake())
+                leftRoad.ifPresent(changeLane::initTransition);
+        }
         driveOnRoad.drive(carInFront);
     }
 
