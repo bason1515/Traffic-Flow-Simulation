@@ -33,7 +33,7 @@ public class MovingPoint {
     }
 
     public void applyVelocityToPosition(double elapsedSeconds) {
-        double distTraveled = getSpeed() * elapsedSeconds;
+        double distTraveled = getSpeed() * 0.277 * elapsedSeconds;
         setPosition(getPosition().add(direction.multiply(distTraveled)));
     }
 

@@ -72,7 +72,7 @@ public class CarCounter {
     }
 
     private boolean isCarCrossingCounter(Car car) {
-        Point2D distanceTraveled = car.getDirection().multiply(car.getVelocity() * elapsedSeconds);
+        Point2D distanceTraveled = car.getDirection().multiply(car.getVelocity() * 0.277 * elapsedSeconds);
         return lanesIntersect(
                 car.getPosition(),
                 car.getPosition().add(distanceTraveled),

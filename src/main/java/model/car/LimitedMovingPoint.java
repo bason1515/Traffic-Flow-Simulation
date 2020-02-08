@@ -9,6 +9,7 @@ import lombok.Setter;
 public class LimitedMovingPoint extends MovingPoint {
     Limitation limits;
     private double acceleration;
+    private double desAcceleration;
 
     public LimitedMovingPoint(Point2D startingPoint, Limitation limits, Point2D direction) {
         super(startingPoint, direction);
@@ -17,29 +18,29 @@ public class LimitedMovingPoint extends MovingPoint {
 
     @Override
     public void applyVelocityToPosition(double elapsedSeconds) {
-        setVelocity(acceleration * 5.5 * elapsedSeconds + getSpeed());
+        incCurrentAcceleration(elapsedSeconds);
+        setVelocity(acceleration * 3.6 * elapsedSeconds + getSpeed());
         setVelocity(Math.min(limits.getMaxVel(), getVelocity()));
         setVelocity(Math.max(0.0, getVelocity()));
         super.applyVelocityToPosition(elapsedSeconds);
     }
 
-    public void accelerate() {
-        acceleration = limits.getMaxAccel();
-        double proc = getSpeed() / limits.getMaxVel();
-        double speedFactor = 2 - proc * 1.5;
-        System.out.println(speedFactor);
-        acceleration = limits.getMaxAccel() * speedFactor;
-//        Point2D newVelocity = getVelocity().add(limits.limitWithMaxAccel(vector));
-//        if (newVelocity.magnitude() > limits.getMaxVel())
-//            setVelocity(limits.limitWithMaxVelo(newVelocity));
-//        else setVelocity(newVelocity);
+    private void incCurrentAcceleration(double elapsedSeconds) {
+        if (desAcceleration <= 0) return;
+        acceleration += elapsedSeconds / 3;
+        acceleration = Math.min(desAcceleration, acceleration);
     }
 
-    public void slowDown() {
-        acceleration = limits.getMaxBreak();
-//        Point2D slowDownForce = Limitation.limit(getVelocity(), limits.getMaxBreak() * scalar);
-//        if (getVelocity().magnitude() < slowDownForce.magnitude()) stopCar();
-//        else setVelocity(getVelocity().add(slowDownForce));
+    public void accelerate() {
+        if (acceleration < 0) acceleration = 0;
+        desAcceleration = limits.getMaxAccel();
+        double proc = getSpeed() / limits.getMaxVel();
+        double speedFactor = 2 - proc * 1.5;
+        desAcceleration = limits.getMaxAccel() * speedFactor;
+    }
+
+    public void slowDown(double brakeForce) {
+        acceleration = brakeForce;
     }
 
     private void stopCar() {

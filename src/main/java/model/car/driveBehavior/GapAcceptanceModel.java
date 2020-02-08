@@ -71,7 +71,6 @@ public class GapAcceptanceModel {
 
     private boolean isAboveMinLeadGap(Car car) {
         double gap = calculateGap(car);
-        System.out.println("lead gap: " + gap);
         double gapMod = me.getSpeed() - car.getSpeed();
         gapMod = Math.max(0, gapMod);
         return gap >= myAndHisBumper(car) + 20 + gapMod;
@@ -81,7 +80,6 @@ public class GapAcceptanceModel {
         double gap = calculateGap(car);
         double minGap = (car.getSpeed() - me.getSpeed()) + 20;
         minGap = Math.max(20, minGap);
-        System.out.println("lag gap: " + gap + " / " + minGap);
         return gap >= myAndHisBumper(car) + minGap;
     }
 

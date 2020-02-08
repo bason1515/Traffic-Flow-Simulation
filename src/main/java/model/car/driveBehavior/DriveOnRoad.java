@@ -46,7 +46,7 @@ public class DriveOnRoad {
             calculateParameters();
             if (deltaX < abx) {
                 status = CarStatus.BREAK;
-                decelerate(0.7);
+                decelerate(1);
                 myCar.getView().setFill(Color.RED);
                 if (deltaX <= 0.5) {
                     status = CarStatus.COLLISION;
@@ -54,9 +54,10 @@ public class DriveOnRoad {
                 }
             } else if (deltaV > sdv) {
                 status = CarStatus.CLOSING_IN;
-                if (deltaV > cldv)
-                    decelerate(0.3);
-                myCar.getView().setFill(Color.YELLOW);
+                if (deltaV > cldv) {
+                    decelerate(0.5);
+                    myCar.getView().setFill(Color.YELLOW);
+                }
             } else if (deltaV < opdv || deltaX > sdx) {
                 status = CarStatus.FREE;
                 freeDrive();
@@ -109,8 +110,9 @@ public class DriveOnRoad {
 
     private void decelerate(double scale) {
         myCar.setDirection(drivenRoad.getDirection());
-        double b = Math.abs(scale * (0.5 + nrnd));
-        myCar.slowDown();
+        double timeToLeader = deltaX / ((myCar.getSpeed() - carInFront.getSpeed()) * 0.277);
+        double breakForce = (myCar.getSpeed() - carInFront.getSpeed()) / timeToLeader;
+        myCar.slowDown(Math.min(-1 * breakForce * scale, -0.5));
     }
 
     private void freeDrive() {

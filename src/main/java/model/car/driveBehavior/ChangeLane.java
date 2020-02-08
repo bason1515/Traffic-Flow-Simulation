@@ -35,7 +35,6 @@ public class ChangeLane {
         double myMaxV = myCar.getLimits().getMaxVel();
         boolean toSlow = gapModel.getLead().map(lead -> myMaxV - lead.getSpeed() >= 3).orElse(false);
         return gap && !toSlow;
-//        return gapModel.isRightLineAccepted();
     }
 
     private boolean canChangeLane(Road target) {
@@ -45,7 +44,6 @@ public class ChangeLane {
     }
 
     public void initTransition(Road target) {
-        System.out.println("Init tran ");
         this.target = target;
         createTransition();
         changeRoad();

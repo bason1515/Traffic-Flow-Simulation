@@ -27,7 +27,7 @@ import java.text.DecimalFormat;
 import java.util.Timer;
 
 public class Controller {
-    private static final int LANE_NUMBER = 3;
+    private static final int LANE_NUMBER = 1;
 
     @FXML
     private Pane sim;
