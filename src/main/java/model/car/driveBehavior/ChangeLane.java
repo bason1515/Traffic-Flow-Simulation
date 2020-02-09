@@ -21,8 +21,7 @@ public class ChangeLane {
     }
 
     public boolean shouldOvertake() {
-        if (myCar.getDriver().getDriveOnRoad().getStatus() == CarStatus.FREE) return false;
-        Optional<Road> leftRoad = myCar.getCurrentRoad().getLeft();
+        if (myCar.getDriver().getStatus() == CarStatus.FREE) return false;
         double myMaxV = myCar.getLimits().getMaxVel();
         boolean canGoFaster = myMaxV - myCar.getSpeed() > 1;
         boolean gap = gapModel.isLeftLineAccepted();

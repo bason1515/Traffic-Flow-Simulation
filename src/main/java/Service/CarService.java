@@ -19,6 +19,7 @@ public class CarService {
 
     private CarRepository carRepo;
     private RoadRepository roadRepo;
+    private double elapsedSeconds;
 
     public CarService(CarRepository carRepository, RoadRepository roadRepository) {
         this.carRepo = carRepository;
@@ -35,7 +36,7 @@ public class CarService {
     }
 
     public void updateCars(double elapsedTime) {
-        double elapsedSeconds = elapsedTime / 1_000_000_000.0;
+        elapsedSeconds = elapsedTime / 1_000_000_000.0;
         Stream<Road> roadStream = roadRepo.getAll().stream();
         roadStream.forEach(this::driveCarsOnRoad);
         carRepo.getAll().forEach(c -> c.applyVelocityToPosition(elapsedSeconds));
@@ -45,7 +46,7 @@ public class CarService {
     private void driveCarsOnRoad(Road road) {
         updateCarsInFront(road);
         for (int i = 0; i < road.getOnRoad().size(); i++) {
-            road.getOnRoad().get(i).performDrive();
+            road.getOnRoad().get(i).performDrive(elapsedSeconds);
         }
     }
 

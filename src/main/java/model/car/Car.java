@@ -31,12 +31,12 @@ public class Car extends LimitedMovingPoint {
     @Setter(AccessLevel.NONE)
     private final double[] rnd = new double[4];
 
-    public void performDrive() {
-        driver.drive(carInFront);
+    public void performDrive(double elapsedSeconds) {
+        driver.drive(carInFront, elapsedSeconds);
     }
 
     public Car(Point2D position, Limitation carLimits, double width, double height, Road currentRoad) {
-        super(position, carLimits,currentRoad.getDirection());
+        super(position, carLimits, currentRoad.getDirection());
         carId = count++;
         this.type = CarType.CAR;
         this.currentRoad = currentRoad;

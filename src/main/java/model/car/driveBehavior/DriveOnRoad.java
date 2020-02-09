@@ -1,12 +1,11 @@
 package model.car.driveBehavior;
 
 import javafx.geometry.Point2D;
-import javafx.scene.paint.Color;
-import lombok.Getter;
 import lombok.Setter;
 import model.car.Car;
 import model.road.Road;
 
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class DriveOnRoad {
@@ -15,8 +14,6 @@ public class DriveOnRoad {
     private Road drivenRoad;
     private Car myCar;
     private Car carInFront;
-    @Getter
-    private CarStatus status;
 
     private double deltaX;
     private double deltaV;
@@ -33,44 +30,33 @@ public class DriveOnRoad {
     public DriveOnRoad(Car myCar) {
         this.myCar = myCar;
         this.drivenRoad = myCar.getCurrentRoad();
-        status = CarStatus.FREE;
     }
 
-    public void drive(Car carInFront) {
+    public CarStatus getNewStatus(Car carInFront) {
         this.carInFront = carInFront;
-        performAction();
+        return checkThresholds();
     }
 
-    private void performAction() {
+    private CarStatus checkThresholds() {
+        CarStatus newStatus = CarStatus.FREE;
         if (carInFront != null) {
             calculateParameters();
             if (deltaX < abx) {
-                status = CarStatus.BREAK;
-                decelerate(1);
-                myCar.getView().setFill(Color.RED);
+                newStatus = CarStatus.BREAK;
                 if (deltaX <= 0.5) {
-                    status = CarStatus.COLLISION;
-                    myCar.setVelocity(0.0);
+                    newStatus = CarStatus.COLLISION;
                 }
             } else if (deltaV > sdv) {
-                status = CarStatus.CLOSING_IN;
                 if (deltaV > cldv) {
-                    decelerate(0.5);
-                    myCar.getView().setFill(Color.YELLOW);
+                    newStatus = CarStatus.CLOSING_IN;
                 }
             } else if (deltaV < opdv || deltaX > sdx) {
-                status = CarStatus.FREE;
-                freeDrive();
-                myCar.getView().setFill(Color.GREEN);
+                newStatus = CarStatus.FREE;
             } else {
-                status = CarStatus.FOLLOW;
-                myCar.getView().setFill(Color.BLUE);
+                newStatus = CarStatus.FOLLOW;
             }
-        } else {
-            status = CarStatus.FREE;
-            myCar.getView().setFill(Color.BLACK);
-            freeDrive();
         }
+        return newStatus;
     }
 
     private void calculateParameters() {
@@ -108,7 +94,28 @@ public class DriveOnRoad {
         opdv = cldv * -1.2;
     }
 
+    public void drive() {
+        CarStatus status = myCar.getDriver().getStatus();
+        switch (status) {
+            case FREE:
+                freeDrive();
+                break;
+            case CLOSING_IN:
+                decelerate(0.5);
+                break;
+            case BREAK:
+                decelerate(1);
+                break;
+            case COLLISION:
+                myCar.setVelocity(0.5);
+                break;
+            default:
+                break;
+        }
+    }
+
     private void decelerate(double scale) {
+        if (Objects.isNull(carInFront)) return;
         myCar.setDirection(drivenRoad.getDirection());
         double timeToLeader = deltaX / ((myCar.getSpeed() - carInFront.getSpeed()) * 0.277);
         double breakForce = (myCar.getSpeed() - carInFront.getSpeed()) / timeToLeader;
