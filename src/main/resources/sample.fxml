@@ -49,6 +49,11 @@
                     value="6" blockIncrement="1"/>
             <Label GridPane.columnIndex="2" GridPane.rowIndex="6" fx:id="timewarpLabel"/>
 
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="7" text="Ramp Car/min:"/>
+            <Slider GridPane.columnIndex="1" GridPane.rowIndex="7" fx:id="rampSpawnRateSlider" max="3600"
+                    value="900" blockIncrement="60"/>
+            <Label GridPane.columnIndex="2" GridPane.rowIndex="7" fx:id="rampSpawnRateLabel"/>
+
         </GridPane>
     </right>
 </BorderPane>
