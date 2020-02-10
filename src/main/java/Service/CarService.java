@@ -59,10 +59,10 @@ public class CarService {
             currentCar.setCarInFront(carInFront);
             currentCar = carInFront;
         }
-        Car caronNextRoad = currentCar.getCurrentRoad().getNext()
-                .map(road1 -> road1.getOnRoad().getFirst())
+        Car carOnNextRoad = currentCar.getCurrentRoad().getNext()
+                .map(road1 -> road1.getOnRoad().peekFirst())
                 .orElse(null);
-        currentCar.setCarInFront(caronNextRoad);
+        currentCar.setCarInFront(carOnNextRoad);
     }
 
     private void applyRoadBorder() {

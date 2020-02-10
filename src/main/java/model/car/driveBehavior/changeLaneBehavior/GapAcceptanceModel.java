@@ -1,4 +1,4 @@
-package model.car.driveBehavior;
+package model.car.driveBehavior.changeLaneBehavior;
 
 import javafx.geometry.Point2D;
 import lombok.Getter;

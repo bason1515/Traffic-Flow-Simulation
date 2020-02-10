@@ -5,6 +5,7 @@ import javafx.scene.shape.Line;
 import lombok.Getter;
 import lombok.Setter;
 import model.car.Car;
+import model.car.driveBehavior.changeLaneBehavior.ChangeLaneFactory;
 
 import java.util.*;
 
@@ -15,6 +16,7 @@ public class Road extends Line {
 
     private static Long count = 1L;
     private final Long roadId;
+    private RoadType type;
 
     private Point2D direction;
     private double length;
@@ -30,6 +32,7 @@ public class Road extends Line {
 
     public Road(double startX, double startY, double endX, double endY) {
         super(startX, startY, endX, endY);
+        this.type = RoadType.LANE;
         roadId = count++;
         direction = getEndPoint2D().subtract(getStartPoint2D()).normalize();
         length = getStartPoint2D().distance(getEndPoint2D());
@@ -60,6 +63,7 @@ public class Road extends Line {
         car.setCurrentRoad(this);
         car.setDirection(direction);
         car.getDriver().getDriveOnRoad().setDrivenRoad(this);
+        car.getDriver().setChangeLane(ChangeLaneFactory.getChangeLane(car));
     }
 
     private boolean isBehind(Car source, Car target) {

@@ -17,7 +17,9 @@ import javafx.scene.control.Slider;
 import javafx.scene.layout.Pane;
 import model.car.Car;
 import model.car.Limitation;
+import model.car.Obstacle;
 import model.road.Road;
+import model.road.RoadType;
 import model.roadObject.VehicleSpawner;
 import repository.CarRepository;
 import repository.CarRepositoryImpl;
@@ -94,6 +96,7 @@ public class Controller {
         target.addLaneToRight();
         ramp = target.getRight().get();
         target.setRight(null);
+        ramp.setType(RoadType.RAMP);
         ramp.setStartPoint2D(ramp.getStartPoint2D().add(ramp.getDirection().multiply(ramp.getLength() / 2 + 50)));
         ramp.setEndPoint2D(ramp.getStartPoint2D());
         ramp.setEndPoint2D(ramp.getEndPoint2D().add(ramp.getDirection().multiply(length)));
@@ -104,7 +107,7 @@ public class Controller {
 
     private void createObstacleAtEnd(Road ramp) {
         Point2D position = ramp.getEndPoint2D().subtract(ramp.getDirection());
-        Car obstacle = new Car(position,
+        Obstacle obstacle = new Obstacle(position,
                 new Limitation(0, 0, 0), 5, 5, ramp);
         ramp.addOnRoad(obstacle);
     }

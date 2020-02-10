@@ -4,6 +4,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import model.car.Car;
+import model.car.driveBehavior.changeLaneBehavior.ChangeLane;
+import model.car.driveBehavior.changeLaneBehavior.ChangeLaneFactory;
 import model.road.Road;
 
 import java.util.Optional;
@@ -24,7 +26,7 @@ public class Driver {
     public Driver(Car myCar) {
         this.myCar = myCar;
         this.driveOnRoad = new DriveOnRoad(myCar);
-        this.changeLane = new ChangeLane(myCar);
+        this.changeLane = ChangeLaneFactory.getChangeLane(myCar);
         this.status = CarStatus.FREE;
         reactionTime = 0.5;
         timeFromNewStatus = 0.0;

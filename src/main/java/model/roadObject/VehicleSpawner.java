@@ -5,6 +5,7 @@ import javafx.beans.property.*;
 import lombok.Getter;
 import lombok.Setter;
 import model.car.Car;
+import model.car.CarType;
 import model.car.Limitation;
 import model.road.Road;
 import repository.CarRepository;
@@ -74,8 +75,14 @@ public class VehicleSpawner {
 
     private void createVehicleOnRoad(Road road) {
         Car car;
-        if (shouldISpawnTruck()) car = new Car(road.getStartPoint2D(), new Limitation(truckLimits), 5, 20, road);
-        else car = new Car(road.getStartPoint2D(), new Limitation(carLimits), 5, 8, road);
+        if (shouldISpawnTruck()) {
+            car = new Car(road.getStartPoint2D(), new Limitation(truckLimits), 5, 20, road);
+            car.setType(CarType.TRUCK);
+        }
+        else {
+            car = new Car(road.getStartPoint2D(), new Limitation(carLimits), 5, 8, road);
+            car.setType(CarType.CAR);
+        }
         double startingV = Optional.ofNullable(road.getOnRoad().peekFirst())
                 .map(Car::getSpeed)
                 .orElse(car.getLimits().getMaxVel());
