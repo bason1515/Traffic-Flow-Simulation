@@ -1,6 +1,6 @@
 package Service;
 
-import javafx.scene.Node;
+import javafx.scene.Group;
 import lombok.Getter;
 import lombok.Setter;
 import model.road.Road;
@@ -8,33 +8,41 @@ import model.roadObject.CarCounter;
 import model.roadObject.VehicleSpawner;
 import repository.CarRepository;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Getter
 @Setter
 public class RoadObjectService {
     private CarRepository carRepository;
-    private CarCounter carCounter;
-    private VehicleSpawner spawner;
+    private ArrayList<CarCounter> carCounter;
+    private ArrayList<VehicleSpawner> spawner;
 
     public RoadObjectService(CarRepository carRepository) {
         this.carRepository = carRepository;
+        this.carCounter = new ArrayList<>();
+        this.spawner = new ArrayList<>();
     }
 
     public void createCarCounter(Road road) {
-        carCounter = new CarCounter(road);
+        carCounter.add(new CarCounter(road));
     }
 
-    public void createVehicleSpawner(Road road) {
-        spawner = new VehicleSpawner(carRepository);
+    public VehicleSpawner createVehicleSpawner(Road road) {
+        VehicleSpawner spawner = new VehicleSpawner(carRepository);
         spawner.addRoad(road);
+        this.spawner.add(spawner);
+        return spawner;
     }
 
     public void updateRoadObjects(long elapsedTime) {
         double elapsedSeconds = elapsedTime / 1_000_000_000.0;
-        carCounter.update(carRepository.getAll(), elapsedSeconds);
-        spawner.update(elapsedSeconds);
+        carCounter.forEach(c -> c.update(carRepository.getAll(), elapsedSeconds));
+        spawner.forEach(s -> s.update(elapsedSeconds));
     }
 
-    public Node getAllViews() {
-        return carCounter.getView();
+    public List<Group> getAllViews() {
+        return carCounter.stream().map(CarCounter::getView).collect(Collectors.toList());
     }
 }

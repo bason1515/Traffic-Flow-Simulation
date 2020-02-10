@@ -59,7 +59,10 @@ public class CarService {
             currentCar.setCarInFront(carInFront);
             currentCar = carInFront;
         }
-        currentCar.setCarInFront(null);
+        Car caronNextRoad = currentCar.getCurrentRoad().getNext()
+                .map(road1 -> road1.getOnRoad().getFirst())
+                .orElse(null);
+        currentCar.setCarInFront(caronNextRoad);
     }
 
     private void applyRoadBorder() {
@@ -68,7 +71,9 @@ public class CarService {
                 Car car = road.getOnRoad().getLast();
                 double distToRoadStart = road.getStartPoint2D().distance(car.getPosition());
                 if (distToRoadStart >= road.getLength()) {
-                    deleteCar(car);
+                    road.getNext().ifPresent(next -> next.moveCarToThisRoad(car));
+                    if (!road.getNext().isPresent())
+                        deleteCar(car);
                 }
             }
         }

@@ -22,6 +22,7 @@ public class Road extends Line {
     private List<Car> bufferOnRoad;
     private Road left = null;
     private Road right = null;
+    private Road next = null;
 
     public Road(Point2D start, Point2D end) {
         this(start.getX(), start.getY(), end.getX(), end.getY());
@@ -51,6 +52,14 @@ public class Road extends Line {
             }
         }
         iterator.add(car);
+    }
+
+    public void moveCarToThisRoad(Car car){
+        car.getCurrentRoad().removeOnRoad(car);
+        addOnRoad(car);
+        car.setCurrentRoad(this);
+        car.setDirection(direction);
+        car.getDriver().getDriveOnRoad().setDrivenRoad(this);
     }
 
     private boolean isBehind(Car source, Car target) {
@@ -156,6 +165,10 @@ public class Road extends Line {
 
     public Optional<Road> getRight() {
         return Optional.ofNullable(right);
+    }
+
+    public Optional<Road> getNext() {
+        return Optional.ofNullable(next);
     }
 
 }

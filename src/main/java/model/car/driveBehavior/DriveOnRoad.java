@@ -47,9 +47,7 @@ public class DriveOnRoad {
                     newStatus = CarStatus.COLLISION;
                 }
             } else if (deltaV > sdv) {
-                if (deltaV > cldv) {
-                    newStatus = CarStatus.CLOSING_IN;
-                }
+                newStatus = CarStatus.CLOSING_IN;
             } else if (deltaV < opdv || deltaX > sdx) {
                 newStatus = CarStatus.FREE;
             } else {
@@ -101,25 +99,30 @@ public class DriveOnRoad {
                 freeDrive();
                 break;
             case CLOSING_IN:
-                decelerate(0.5);
+                decelerate();
                 break;
             case BREAK:
-                decelerate(1);
+                maxDeceleration();
                 break;
             case COLLISION:
-                myCar.setVelocity(0.5);
+                myCar.setVelocity(0.0);
                 break;
             default:
                 break;
         }
     }
 
-    private void decelerate(double scale) {
+    private void maxDeceleration() {
+        myCar.slowDown(myCar.getLimits().getMaxBreak());
+    }
+
+    private void decelerate() {
         if (Objects.isNull(carInFront)) return;
         myCar.setDirection(drivenRoad.getDirection());
-        double timeToLeader = deltaX / ((myCar.getSpeed() - carInFront.getSpeed()) * 0.277);
-        double breakForce = (myCar.getSpeed() - carInFront.getSpeed()) / timeToLeader;
-        myCar.slowDown(Math.min(-1 * breakForce * scale, -0.5));
+        double timeToLeader = deltaX / (deltaV * 0.277);
+        double breakForce = deltaV / timeToLeader;
+        breakForce = -1 * Math.abs(breakForce);
+        myCar.slowDown(Math.min(breakForce, -0.25));
     }
 
     private void freeDrive() {

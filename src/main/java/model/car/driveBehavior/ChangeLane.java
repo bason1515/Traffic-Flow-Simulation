@@ -50,7 +50,7 @@ public class ChangeLane {
 
     private void createTransition() {
         Point2D position = myCar.getPosition();
-        double distance = myCar.getCurrentRoad().getStartPoint2D().subtract(position).magnitude();
+        double distance = target.getStartPoint2D().subtract(position).magnitude();
         Point2D targetPoint = target.getPointOnLane(distance + myCar.getSpeed());
         transition = new Road(position, targetPoint);
     }

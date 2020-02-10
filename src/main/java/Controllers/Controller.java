@@ -45,7 +45,7 @@ public class Controller {
 
     AnimationTimer simulationTimer;
 
-    public void shutdown(){
+    public void shutdown() {
         if (timer != null)
             timer.cancel();
     }
@@ -59,6 +59,8 @@ public class Controller {
         roadObjectService = new RoadObjectService(carRepository);
         roadsInit();
         roadObjectsInit();
+        initRamp(200);
+        sim.getChildren().addAll(roadService.getRoadRepo().getAll());
         carService.getCarRepo().addListener((MapChangeListener<Long, Car>) change -> {
             if (change.wasAdded()) {
                 Car addedCar = change.getValueAdded();
@@ -76,17 +78,45 @@ public class Controller {
         Road road1 = new Road(50, 50, 800, 600);
         roadService.addLanesToRoad(road1, LANE_NUMBER);
         roadService.addRoad(road1);
-        sim.getChildren().addAll(roadService.getRoadRepo().getAll());
     }
 
-    private void initRamp(){
+    private void initRamp(double length) {
+        Road ramp;
         Road target = roadService.getRoadRepo().getAll().stream()
                 .filter(road -> !road.getRight().isPresent())
                 .findFirst()
                 .orElse(roadService.getRoadRepo().byId(1L));
-//        target.add
-        Point2D endOfRamp = target.getStartPoint2D().midpoint(target.getEndPoint2D());
-//        Point2D start
+        target.addLaneToRight();
+        ramp = target.getRight().get();
+        target.setRight(null);
+        ramp.setStartPoint2D(ramp.getStartPoint2D().add(ramp.getDirection().multiply(ramp.getLength() / 2 + 50)));
+        ramp.setEndPoint2D(ramp.getStartPoint2D());
+        ramp.setEndPoint2D(ramp.getEndPoint2D().add(ramp.getDirection().multiply(length)));
+        createObstacleAtEnd(ramp);
+        createInFlowRoad(ramp);
+        roadService.addRoad(ramp);
+    }
+
+    private void createObstacleAtEnd(Road ramp) {
+        Point2D position = ramp.getEndPoint2D().subtract(ramp.getDirection());
+        Car obstacle = new Car(position,
+                new Limitation(0,0,0), 5, 5, ramp);
+        ramp.addOnRoad(obstacle);
+    }
+
+    private Road createInFlowRoad(Road ramp) {
+        Road inFlow;
+        Point2D direction = ramp.getDirection();
+        Point2D start = ramp.getStartPoint2D();
+        double rx = (direction.getX() * Math.cos(10)) - (direction.getY() * Math.sin(10));
+        double ry = (direction.getX() * Math.sin(10)) + (direction.getY() * Math.cos(10));
+        direction = new Point2D(ry, rx);
+        start = start.add(direction.multiply(250));
+        inFlow = new Road(start, ramp.getStartPoint2D());
+        inFlow.setNext(ramp);
+        roadObjectService.createVehicleSpawner(inFlow);
+        roadService.getRoadRepo().save(inFlow);
+        return inFlow;
     }
 
     private void roadObjectsInit() {
@@ -114,8 +144,8 @@ public class Controller {
     }
 
     private void bindSlidersToSpawner() {
-        roadObjectService.getSpawner().vehiclePerHourProperty().bindBidirectional(spawnRateSlider.valueProperty());
-        roadObjectService.getSpawner().truckChanceProperty().bindBidirectional(truckChanceSlider.valueProperty());
+        roadObjectService.getSpawner().get(0).vehiclePerHourProperty().bindBidirectional(spawnRateSlider.valueProperty());
+        roadObjectService.getSpawner().get(0).truckChanceProperty().bindBidirectional(truckChanceSlider.valueProperty());
         bindCarLimitation();
         bindTruckLimitation();
     }
@@ -137,13 +167,13 @@ public class Controller {
     }
 
     private void bindCarLimitation() {
-        Limitation limitation = roadObjectService.getSpawner().getCarLimits();
+        Limitation limitation = roadObjectService.getSpawner().get(0).getCarLimits();
         limitation.maxAccelProperty().bindBidirectional(maxAcceSlider.valueProperty());
         limitation.maxVelProperty().bindBidirectional(maxVeloSlider.valueProperty());
     }
 
     private void bindTruckLimitation() {
-        Limitation truckLimits = roadObjectService.getSpawner().getTruckLimits();
+        Limitation truckLimits = roadObjectService.getSpawner().get(0).getTruckLimits();
         truckLimits.maxAccelProperty().bindBidirectional(maxTruckAcceSlider.valueProperty());
         truckLimits.maxVelProperty().bindBidirectional(maxTruckVeloSlider.valueProperty());
     }
@@ -163,7 +193,7 @@ public class Controller {
             }
         };
         simulationTimer.start();
-        DataSaver task = new DataSaver(spawnRateSlider.valueProperty(), roadObjectService.getCarCounter());
+        DataSaver task = new DataSaver(spawnRateSlider.valueProperty(), roadObjectService.getCarCounter().get(0));
         timer = new Timer("Data Save");
         timer.scheduleAtFixedRate(task, 5000L, 5000L);
     }

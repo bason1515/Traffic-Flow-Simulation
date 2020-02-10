@@ -33,7 +33,6 @@ public class LimitedMovingPoint extends MovingPoint {
 
     public void accelerate() {
         if (acceleration < 0) acceleration = 0;
-        desAcceleration = limits.getMaxAccel();
         double proc = getSpeed() / limits.getMaxVel();
         double speedFactor = 2 - proc * 1.5;
         desAcceleration = limits.getMaxAccel() * speedFactor;

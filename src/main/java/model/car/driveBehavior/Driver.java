@@ -7,7 +7,6 @@ import model.car.Car;
 import model.road.Road;
 
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Getter
 @Setter
@@ -27,14 +26,15 @@ public class Driver {
         this.driveOnRoad = new DriveOnRoad(myCar);
         this.changeLane = new ChangeLane(myCar);
         this.status = CarStatus.FREE;
-        reactionTime = 1.0 + ThreadLocalRandom.current().nextDouble(0.0,1.0);
+        reactionTime = 0.5;
         timeFromNewStatus = 0.0;
     }
 
     public void drive(Car carInFront, double elapsedSeconds) {
         this.carInFront = carInFront;
         checkForLaneChange();
-        reaction(elapsedSeconds);
+//        reaction(elapsedSeconds);
+        status = driveOnRoad.getNewStatus(carInFront);
         driveOnRoad.drive();
         CarStatus.setCarColor(myCar);
     }
@@ -43,9 +43,7 @@ public class Driver {
         desStatus = driveOnRoad.getNewStatus(carInFront);
         if (desStatus == status) return;
         timeFromNewStatus += elapsedSeconds;
-        System.out.println("time To react: " + timeFromNewStatus + " / " + reactionTime);
         if (timeFromNewStatus >= reactionTime) {
-            System.out.println("Reaction from " + status + " to " + desStatus);
             status = desStatus;
             timeFromNewStatus = 0.0;
         }
