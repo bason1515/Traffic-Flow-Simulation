@@ -1,9 +1,9 @@
-package model.car.driveBehavior.changeLaneBehavior;
+package model.vehicle.changeLaneBehavior;
 
 import javafx.geometry.Point2D;
 import lombok.Getter;
-import model.car.Car;
-import model.car.driveBehavior.CarStatus;
+import model.vehicle.Vehicle;
+import model.vehicle.driveBehavior.VehicleStatus;
 import model.road.Road;
 
 import java.util.Optional;
@@ -13,18 +13,18 @@ public class ChangeLaneForLane implements ChangeLane {
     private Road target;
     private Road lastRoad;
     private Road transition;
-    private Car myCar;
+    private Vehicle myCar;
     private boolean ended = true;
     private GapAcceptanceModel gapModel;
 
-    public ChangeLaneForLane(Car myCar) {
+    public ChangeLaneForLane(Vehicle myCar) {
         this.myCar = myCar;
         gapModel = new GapAcceptanceModel(myCar);
     }
 
     @Override
     public boolean shouldOvertake() {
-        if (myCar.getDriver().getStatus() == CarStatus.FREE) return false;
+        if (myCar.getDriver().getStatus() == VehicleStatus.FREE) return false;
         double myMaxV = myCar.getLimits().getMaxVel();
         boolean canGoFaster = myMaxV - myCar.getSpeed() > 1;
         boolean gap = gapModel.isLeftLineAccepted();

@@ -1,11 +1,11 @@
-package model.car.driveBehavior;
+package model.vehicle.driveBehavior;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import model.car.Car;
-import model.car.driveBehavior.changeLaneBehavior.ChangeLane;
-import model.car.driveBehavior.changeLaneBehavior.ChangeLaneFactory;
+import model.vehicle.Vehicle;
+import model.vehicle.changeLaneBehavior.ChangeLane;
+import model.vehicle.changeLaneBehavior.ChangeLaneFactory;
 import model.road.Road;
 
 import java.util.Optional;
@@ -14,31 +14,31 @@ import java.util.Optional;
 @Setter
 public class Driver {
     @Setter(AccessLevel.NONE)
-    private Car myCar;
-    private Car carInFront;
+    private Vehicle myCar;
+    private Vehicle carInFront;
     private DriveOnRoad driveOnRoad;
     private ChangeLane changeLane;
-    private CarStatus status;
-    private CarStatus desStatus;
+    private VehicleStatus status;
+    private VehicleStatus desStatus;
     private double reactionTime;
     private double timeFromNewStatus;
 
-    public Driver(Car myCar) {
+    public Driver(Vehicle myCar) {
         this.myCar = myCar;
         this.driveOnRoad = new DriveOnRoad(myCar);
         this.changeLane = ChangeLaneFactory.getChangeLane(myCar);
-        this.status = CarStatus.FREE;
+        this.status = VehicleStatus.FREE;
         reactionTime = 0.5;
         timeFromNewStatus = 0.0;
     }
 
-    public void drive(Car carInFront, double elapsedSeconds) {
+    public void drive(Vehicle carInFront, double elapsedSeconds) {
         this.carInFront = carInFront;
         checkForLaneChange();
 //        reaction(elapsedSeconds);
         status = driveOnRoad.getNewStatus(carInFront);
         driveOnRoad.drive();
-        CarStatus.setCarColor(myCar);
+        VehicleStatus.setCarColor(myCar);
     }
 
     private void reaction(double elapsedSeconds) {

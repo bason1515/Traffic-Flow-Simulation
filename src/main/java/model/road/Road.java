@@ -4,8 +4,8 @@ import javafx.geometry.Point2D;
 import javafx.scene.shape.Line;
 import lombok.Getter;
 import lombok.Setter;
-import model.car.Car;
-import model.car.driveBehavior.changeLaneBehavior.ChangeLaneFactory;
+import model.vehicle.Vehicle;
+import model.vehicle.changeLaneBehavior.ChangeLaneFactory;
 
 import java.util.*;
 
@@ -20,8 +20,8 @@ public class Road extends Line {
 
     private Point2D direction;
     private double length;
-    private LinkedList<Car> onRoad;
-    private List<Car> bufferOnRoad;
+    private LinkedList<Vehicle> onRoad;
+    private List<Vehicle> bufferOnRoad;
     private Road left = null;
     private Road right = null;
     private Road next = null;
@@ -40,14 +40,14 @@ public class Road extends Line {
         bufferOnRoad = new ArrayList<>();
     }
 
-    public void removeOnRoad(Car c) {
+    public void removeOnRoad(Vehicle c) {
         onRoad.remove(c);
     }
 
-    public void addOnRoad(Car car) {
-        ListIterator<Car> iterator = onRoad.listIterator();
+    public void addOnRoad(Vehicle car) {
+        ListIterator<Vehicle> iterator = onRoad.listIterator();
         while (iterator.hasNext()) {
-            Car target = iterator.next();
+            Vehicle target = iterator.next();
             if (!isBehind(car, target)) {
                 iterator.previous();
                 iterator.add(car);
@@ -57,7 +57,7 @@ public class Road extends Line {
         iterator.add(car);
     }
 
-    public void moveCarToThisRoad(Car car){
+    public void moveCarToThisRoad(Vehicle car){
         car.getCurrentRoad().removeOnRoad(car);
         addOnRoad(car);
         car.setCurrentRoad(this);
@@ -66,7 +66,7 @@ public class Road extends Line {
         car.getDriver().setChangeLane(ChangeLaneFactory.getChangeLane(car));
     }
 
-    private boolean isBehind(Car source, Car target) {
+    private boolean isBehind(Vehicle source, Vehicle target) {
         if (source.equals(target)) return true;
         Point2D driveVec = direction;
         Point2D vecToTarget = new Point2D(target.getX() - source.getX(), target.getY() - source.getY());

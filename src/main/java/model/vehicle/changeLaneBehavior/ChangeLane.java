@@ -1,4 +1,4 @@
-package model.car.driveBehavior.changeLaneBehavior;
+package model.vehicle.changeLaneBehavior;
 
 import model.road.Road;
 

@@ -1,23 +1,23 @@
 package repository;
 
 import javafx.collections.MapChangeListener;
-import model.car.Car;
-import model.car.CarType;
+import model.vehicle.Vehicle;
+import model.vehicle.VehicleType;
 
 import java.util.Collection;
 import java.util.List;
 
-public interface CarRepository {
+public interface VehicleRepository {
 
-    void save(Car car);
+    void save(Vehicle car);
 
     void remove(Long id);
 
-    Collection<Car> getAll();
+    Collection<Vehicle> getAll();
 
-    Car byId(Long id);
+    Vehicle byId(Long id);
 
-    List<Car> byCarType(CarType type);
+    List<Vehicle> byCarType(VehicleType type);
 
     void addListener(MapChangeListener listener);
 

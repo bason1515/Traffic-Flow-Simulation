@@ -1,4 +1,4 @@
-package model.car;
+package model.vehicle;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;

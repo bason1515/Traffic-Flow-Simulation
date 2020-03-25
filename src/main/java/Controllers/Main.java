@@ -1,4 +1,4 @@
-package sample;
+package Controllers;
 
 import Controllers.Controller;
 import javafx.application.Application;

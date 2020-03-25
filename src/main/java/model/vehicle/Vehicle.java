@@ -1,4 +1,4 @@
-package model.car;
+package model.vehicle;
 
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Point2D;
@@ -6,7 +6,7 @@ import javafx.scene.shape.Rectangle;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import model.car.driveBehavior.Driver;
+import model.vehicle.driveBehavior.Driver;
 import model.road.Road;
 
 import java.util.Optional;
@@ -14,18 +14,18 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @Getter
 @Setter
-public class Car extends LimitedMovingPoint {
+public class Vehicle extends LimitedMovingPoint {
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     private static Long count = 1L;
     @Setter(AccessLevel.NONE)
     private final Long carId;
 
-    private CarType type;
+    private VehicleType type;
     private Driver driver;
     private Road currentRoad;
     private Rectangle view;
-    private Car carInFront;
+    private Vehicle carInFront;
 
     // Wiedemann driver dependent parameters
     @Setter(AccessLevel.NONE)
@@ -35,10 +35,10 @@ public class Car extends LimitedMovingPoint {
         driver.drive(carInFront, elapsedSeconds);
     }
 
-    public Car(Point2D position, Limitation carLimits, double width, double height, Road currentRoad) {
+    public Vehicle(Point2D position, Limitation carLimits, double width, double height, Road currentRoad) {
         super(position, carLimits, currentRoad.getDirection());
         carId = count++;
-        this.type = CarType.CAR;
+        this.type = VehicleType.CAR;
         this.currentRoad = currentRoad;
         this.driver = new Driver(this);
         this.view = new Rectangle(getX(), getY(), width, height);
@@ -89,7 +89,7 @@ public class Car extends LimitedMovingPoint {
         return view.getHeight();
     }
 
-    public Optional<Car> getCarInFront() {
+    public Optional<Vehicle> getCarInFront() {
         return Optional.ofNullable(carInFront);
     }
 

@@ -1,4 +1,4 @@
-package model.car;
+package model.vehicle;
 
 import javafx.geometry.Point2D;
 import lombok.Getter;

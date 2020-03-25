@@ -1,9 +1,9 @@
-package model.car.driveBehavior.changeLaneBehavior;
+package model.vehicle.changeLaneBehavior;
 
 import javafx.geometry.Point2D;
 import lombok.Getter;
 import lombok.Setter;
-import model.car.Car;
+import model.vehicle.Vehicle;
 import model.road.Road;
 
 import java.util.Objects;
@@ -15,11 +15,11 @@ public class GapAcceptanceModel {
     @Setter
     private static double minLeadGap, minLagGap;
     @Getter
-    private Car me, lead, lag;
+    private Vehicle me, lead, lag;
     private double leadGap, lagGap;
     private boolean leadAccept, lagAccept;
 
-    public GapAcceptanceModel(Car myCar) {
+    public GapAcceptanceModel(Vehicle myCar) {
         this.me = myCar;
         minLagGap = 50;
         minLeadGap = 25;
@@ -47,7 +47,7 @@ public class GapAcceptanceModel {
     private void findLeadLag(Road target) {
         lag = findLaggingCar(target)
                 .orElse(null);
-        lead = Optional.ofNullable(lag).map(Car::getCarInFront)
+        lead = Optional.ofNullable(lag).map(Vehicle::getCarInFront)
                 .orElseGet(() -> findLeadingCar(target))
                 .orElse(null);
     }
@@ -64,26 +64,26 @@ public class GapAcceptanceModel {
     public double avgRoadSpeed() {
         double avg = 0.0;
         int count = (int) Stream.of(lag, lead).filter(Objects::nonNull).count();
-        avg += Optional.ofNullable(lag).map(Car::getSpeed).orElse(0.0);
-        avg += Optional.ofNullable(lead).map(Car::getSpeed).orElse(0.0);
+        avg += Optional.ofNullable(lag).map(Vehicle::getSpeed).orElse(0.0);
+        avg += Optional.ofNullable(lead).map(Vehicle::getSpeed).orElse(0.0);
         return count == 0 ? 1000.0 : avg / count;
     }
 
-    private boolean isAboveMinLeadGap(Car car) {
+    private boolean isAboveMinLeadGap(Vehicle car) {
         double gap = calculateGap(car);
         double gapMod = me.getSpeed() - car.getSpeed();
         gapMod = Math.max(0, gapMod);
         return gap >= myAndHisBumper(car) + 20 + gapMod;
     }
 
-    private boolean isAboveMinLagGap(Car car) {
+    private boolean isAboveMinLagGap(Vehicle car) {
         double gap = calculateGap(car);
         double minGap = (car.getSpeed() - me.getSpeed()) + 20;
         minGap = Math.max(20, minGap);
         return gap >= myAndHisBumper(car) + minGap;
     }
 
-    private double calculateGap(Car target) {
+    private double calculateGap(Vehicle target) {
         return target.getPosition().distance(me.getPosition()) - myAndHisBumper(target);
     }
 
@@ -96,7 +96,7 @@ public class GapAcceptanceModel {
                 .orElse(0.0);
     }
 
-    private Optional<Car> findLeadingCar(Road target) {
+    private Optional<Vehicle> findLeadingCar(Road target) {
         Point2D myPosition = me.getPosition();
         Point2D myDirection = me.getDirection();
         return target.getOnRoad().stream()
@@ -104,7 +104,7 @@ public class GapAcceptanceModel {
                 .min((o1, o2) -> (int) (o1.getPosition().distance(myPosition) - o2.getPosition().distance(myPosition)));
     }
 
-    private Optional<Car> findLaggingCar(Road target) {
+    private Optional<Vehicle> findLaggingCar(Road target) {
         Point2D myPosition = me.getPosition();
         Point2D myDirection = me.getDirection();
         return target.getOnRoad().stream()
@@ -113,15 +113,15 @@ public class GapAcceptanceModel {
                 .min((o1, o2) -> (int) (o1.getPosition().distance(myPosition) - o2.getPosition().distance(myPosition)));
     }
 
-    private double myAndHisBumper(Car car) {
+    private double myAndHisBumper(Vehicle car) {
         return me.getHeight() / 2 + car.getHeight() / 2;
     }
 
-    public Optional<Car> getLead() {
+    public Optional<Vehicle> getLead() {
         return Optional.ofNullable(lead);
     }
 
-    public Optional<Car> getLag() {
+    public Optional<Vehicle> getLag() {
         return Optional.ofNullable(lag);
     }
 }

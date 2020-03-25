@@ -1,8 +1,8 @@
-package model.car.driveBehavior;
+package model.vehicle.driveBehavior;
 
 import javafx.geometry.Point2D;
 import lombok.Setter;
-import model.car.Car;
+import model.vehicle.Vehicle;
 import model.road.Road;
 
 import java.util.Objects;
@@ -12,8 +12,8 @@ public class DriveOnRoad {
     private static ThreadLocalRandom rng = ThreadLocalRandom.current();
     @Setter
     private Road drivenRoad;
-    private Car myCar;
-    private Car carInFront;
+    private Vehicle myCar;
+    private Vehicle carInFront;
 
     private double deltaX;
     private double deltaV;
@@ -27,31 +27,31 @@ public class DriveOnRoad {
     private double cldv;
     private double opdv;
 
-    public DriveOnRoad(Car myCar) {
+    public DriveOnRoad(Vehicle myCar) {
         this.myCar = myCar;
         this.drivenRoad = myCar.getCurrentRoad();
     }
 
-    public CarStatus getNewStatus(Car carInFront) {
+    public VehicleStatus getNewStatus(Vehicle carInFront) {
         this.carInFront = carInFront;
         return checkThresholds();
     }
 
-    private CarStatus checkThresholds() {
-        CarStatus newStatus = CarStatus.FREE;
+    private VehicleStatus checkThresholds() {
+        VehicleStatus newStatus = VehicleStatus.FREE;
         if (carInFront != null) {
             calculateParameters();
             if (deltaX < abx) {
-                newStatus = CarStatus.BREAK;
+                newStatus = VehicleStatus.BREAK;
                 if (deltaX <= 0.5) {
-                    newStatus = CarStatus.COLLISION;
+                    newStatus = VehicleStatus.COLLISION;
                 }
             } else if (deltaV > sdv) {
-                newStatus = CarStatus.CLOSING_IN;
+                newStatus = VehicleStatus.CLOSING_IN;
             } else if (deltaV < opdv || deltaX > sdx) {
-                newStatus = CarStatus.FREE;
+                newStatus = VehicleStatus.FREE;
             } else {
-                newStatus = CarStatus.FOLLOW;
+                newStatus = VehicleStatus.FOLLOW;
             }
         }
         return newStatus;
@@ -93,7 +93,7 @@ public class DriveOnRoad {
     }
 
     public void drive() {
-        CarStatus status = myCar.getDriver().getStatus();
+        VehicleStatus status = myCar.getDriver().getStatus();
         switch (status) {
             case FREE:
                 freeDrive();

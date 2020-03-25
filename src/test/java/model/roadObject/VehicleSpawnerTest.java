@@ -3,7 +3,7 @@ package model.roadObject;
 import model.road.Road;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import repository.CarRepositoryImpl;
+import repository.VehicleRepositoryImpl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -14,7 +14,7 @@ class VehicleSpawnerTest {
     @BeforeEach
     void setUp() {
         road = new Road(0, 0, 50, 50);
-        spawner = new VehicleSpawner(new CarRepositoryImpl());
+        spawner = new VehicleSpawner(new VehicleRepositoryImpl());
         spawner.addRoad(road);
         spawner.setVehiclePerHour(3600);
     }

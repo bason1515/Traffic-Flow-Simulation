@@ -1,7 +1,7 @@
 package Controllers;
 
 import Controllers.event.StartStopEvent;
-import Service.CarService;
+import Service.VehicleService;
 import Service.DataSaver;
 import Service.RoadObjectService;
 import Service.RoadService;
@@ -15,14 +15,14 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.Pane;
-import model.car.Car;
-import model.car.Limitation;
-import model.car.Obstacle;
+import model.vehicle.Vehicle;
+import model.vehicle.Limitation;
+import model.vehicle.Obstacle;
 import model.road.Road;
 import model.road.RoadType;
 import model.roadObject.VehicleSpawner;
-import repository.CarRepository;
-import repository.CarRepositoryImpl;
+import repository.VehicleRepository;
+import repository.VehicleRepositoryImpl;
 import repository.RoadRepository;
 import repository.RoadRepositoryImpl;
 
@@ -45,7 +45,7 @@ public class Controller {
     private Label spawnRateLabel, truckChanceLabel, maxCarAcceLabel, maxCarVeloLabel,
             maxTruckAcceLabel, maxTruckVeloLabel, timewarpLabel, rampSpawnRateLabel;
 
-    private CarService carService;
+    private VehicleService vehicleService;
     private RoadService roadService;
     private RoadObjectService roadObjectService;
     private Timer timer;
@@ -60,21 +60,21 @@ public class Controller {
     @FXML
     public void initialize() {
         RoadRepository roadRepository = new RoadRepositoryImpl();
-        CarRepository carRepository = new CarRepositoryImpl();
+        VehicleRepository vehicleRepository = new VehicleRepositoryImpl();
         roadService = new RoadService(roadRepository);
-        carService = new CarService(carRepository, roadRepository);
-        roadObjectService = new RoadObjectService(carRepository);
+        vehicleService = new VehicleService(vehicleRepository, roadRepository);
+        roadObjectService = new RoadObjectService(vehicleRepository);
         roadsInit();
         initRamp(200);
         roadObjectsInit();
         sim.getChildren().addAll(roadService.getRoadRepo().getAll());
-        carService.getCarRepo().addListener((MapChangeListener<Long, Car>) change -> {
+        vehicleService.getCarRepo().addListener((MapChangeListener<Long, Vehicle>) change -> {
             if (change.wasAdded()) {
-                Car addedCar = change.getValueAdded();
+                Vehicle addedCar = change.getValueAdded();
                 sim.getChildren().add(addedCar.getView());
             }
             if (change.wasRemoved()) {
-                Car removedCar = change.getValueRemoved();
+                Vehicle removedCar = change.getValueRemoved();
                 sim.getChildren().remove(removedCar.getView());
             }
         });
@@ -207,13 +207,13 @@ public class Controller {
                     long elapsedTime = timestamp - lastUpdateTime.get();
                     elapsedTime *= timewarpSlider.getValue();
                     roadObjectService.updateRoadObjects(elapsedTime);
-                    carService.updateCars(elapsedTime);
+                    vehicleService.updateCars(elapsedTime);
                 }
                 lastUpdateTime.set(timestamp);
             }
         };
         simulationTimer.start();
-        DataSaver task = new DataSaver(spawnRateSlider.valueProperty(), roadObjectService.getCarCounter().get(0));
+        DataSaver task = new DataSaver(spawnRateSlider.valueProperty(), roadObjectService.getVehicleCounter().get(0));
         timer = new Timer("Data Save");
         timer.scheduleAtFixedRate(task, 5000L, 5000L);
     }

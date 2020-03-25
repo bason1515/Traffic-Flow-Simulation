@@ -4,11 +4,11 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
 import lombok.Getter;
 import lombok.Setter;
-import model.car.Car;
-import model.car.CarType;
-import model.car.Limitation;
+import model.vehicle.Vehicle;
+import model.vehicle.VehicleType;
+import model.vehicle.Limitation;
 import model.road.Road;
-import repository.CarRepository;
+import repository.VehicleRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,14 +23,14 @@ public class VehicleSpawner {
     @Getter
     @Setter
     private Limitation carLimits, truckLimits;
-    private CarRepository carRepo;
+    private VehicleRepository carRepo;
     private IntegerProperty vehiclePerHour;
     private ReadOnlyDoubleWrapper spawnRate;
     private DoubleProperty truckChance;
     private double lastSpawnTimeInSec;
 
-    public VehicleSpawner(CarRepository carRepository) {
-        this.carRepo = carRepository;
+    public VehicleSpawner(VehicleRepository vehicleRepository) {
+        this.carRepo = vehicleRepository;
         roads = new ArrayList<>();
         carLimits = new Limitation(1.5, -3, 80);
         truckLimits = new Limitation(1, -2, 60);
@@ -68,23 +68,23 @@ public class VehicleSpawner {
 
     private boolean isRoadFree(Road road) {
         if (road.getOnRoad().isEmpty()) return true;
-        Car closestCar = road.getOnRoad().getFirst();
+        Vehicle closestCar = road.getOnRoad().getFirst();
         double distance = road.getStartPoint2D().distance(closestCar.getPosition());
         return distance > 30;
     }
 
     private void createVehicleOnRoad(Road road) {
-        Car car;
+        Vehicle car;
         if (shouldISpawnTruck()) {
-            car = new Car(road.getStartPoint2D(), new Limitation(truckLimits), 5, 20, road);
-            car.setType(CarType.TRUCK);
+            car = new Vehicle(road.getStartPoint2D(), new Limitation(truckLimits), 5, 20, road);
+            car.setType(VehicleType.TRUCK);
         }
         else {
-            car = new Car(road.getStartPoint2D(), new Limitation(carLimits), 5, 8, road);
-            car.setType(CarType.CAR);
+            car = new Vehicle(road.getStartPoint2D(), new Limitation(carLimits), 5, 8, road);
+            car.setType(VehicleType.CAR);
         }
         double startingV = Optional.ofNullable(road.getOnRoad().peekFirst())
-                .map(Car::getSpeed)
+                .map(Vehicle::getSpeed)
                 .orElse(car.getLimits().getMaxVel());
         car.setVelocity(startingV);
         carRepo.save(car);

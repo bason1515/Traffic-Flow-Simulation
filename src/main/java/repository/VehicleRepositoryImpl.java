@@ -3,22 +3,22 @@ package repository;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
-import model.car.Car;
-import model.car.CarType;
+import model.vehicle.Vehicle;
+import model.vehicle.VehicleType;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class CarRepositoryImpl implements CarRepository {
-    private ObservableMap<Long, Car> cars;
+public class VehicleRepositoryImpl implements VehicleRepository {
+    private ObservableMap<Long, Vehicle> cars;
 
-    public CarRepositoryImpl() {
+    public VehicleRepositoryImpl() {
         cars = FXCollections.observableHashMap();
     }
 
     @Override
-    public void save(Car car) {
+    public void save(Vehicle car) {
         cars.put(car.getCarId(), car);
     }
 
@@ -28,17 +28,17 @@ public class CarRepositoryImpl implements CarRepository {
     }
 
     @Override
-    public Collection<Car> getAll() {
+    public Collection<Vehicle> getAll() {
         return cars.values();
     }
 
     @Override
-    public Car byId(Long id) {
+    public Vehicle byId(Long id) {
         return cars.get(id);
     }
 
     @Override
-    public List<Car> byCarType(CarType type) {
+    public List<Vehicle> byCarType(VehicleType type) {
         return cars.values().stream().filter(car -> car.getType().equals(type))
                 .collect(Collectors.toList());
     }

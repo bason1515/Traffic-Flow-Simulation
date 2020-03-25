@@ -1,10 +1,10 @@
-package model.car.driveBehavior.changeLaneBehavior;
+package model.vehicle.changeLaneBehavior;
 
-import model.car.Car;
+import model.vehicle.Vehicle;
 
 public class ChangeLaneForRamp extends ChangeLaneForLane implements ChangeLane {
 
-    public ChangeLaneForRamp(Car car) {
+    public ChangeLaneForRamp(Vehicle car) {
         super(car);
     }
 

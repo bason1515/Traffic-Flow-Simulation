@@ -2,7 +2,7 @@ package Service;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
-import model.roadObject.CarCounter;
+import model.roadObject.VehicleCounter;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,12 +10,12 @@ import java.util.TimerTask;
 
 public class DataSaver extends TimerTask {
     private ReadOnlyDoubleWrapper carInput;
-    private CarCounter carCounter;
+    private VehicleCounter vehicleCounter;
 
-    public DataSaver(DoubleProperty carInput, CarCounter carCounter) {
+    public DataSaver(DoubleProperty carInput, VehicleCounter vehicleCounter) {
         this.carInput = new ReadOnlyDoubleWrapper(this, "carInput");
         this.carInput.bind(carInput);
-        this.carCounter = carCounter;
+        this.vehicleCounter = vehicleCounter;
     }
 
     @Override
@@ -29,7 +29,7 @@ public class DataSaver extends TimerTask {
 
     public void save() throws IOException {
         FileWriter fileWriter = new FileWriter("data.txt", true);
-        String data = carInput.get() + " " + carCounter.getThroughputPerHour() + "\n";
+        String data = carInput.get() + " " + vehicleCounter.getThroughputPerHour() + "\n";
         fileWriter.append(data);
         fileWriter.close();
     }

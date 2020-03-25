@@ -6,7 +6,7 @@ import javafx.scene.control.Label;
 import javafx.scene.shape.Line;
 import lombok.Getter;
 import lombok.Setter;
-import model.car.Car;
+import model.vehicle.Vehicle;
 import model.road.Road;
 
 import java.util.Collection;
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @Setter
-public class CarCounter {
+public class VehicleCounter {
     private double timeFromLastRefresh;
     private double elapsedSeconds;
     private int refreshSec;
@@ -27,7 +27,7 @@ public class CarCounter {
     private Label label;
     private Group view;
 
-    public CarCounter(Road road) {
+    public VehicleCounter(Road road) {
         refreshSec = 5;
         view = new Group();
         initLane(road);
@@ -59,9 +59,9 @@ public class CarCounter {
         view.getChildren().add(label);
     }
 
-    public void update(Collection<Car> cars, double elapsedSeconds) {
+    public void update(Collection<Vehicle> cars, double elapsedSeconds) {
         this.elapsedSeconds = elapsedSeconds;
-        List<Car> crossedCar = cars.stream().filter(this::isCarCrossingCounter)
+        List<Vehicle> crossedCar = cars.stream().filter(this::isCarCrossingCounter)
                 .collect(Collectors.toList());
         addToAverage(crossedCar);
         timeFromLastRefresh += elapsedSeconds;
@@ -71,7 +71,7 @@ public class CarCounter {
         }
     }
 
-    private boolean isCarCrossingCounter(Car car) {
+    private boolean isCarCrossingCounter(Vehicle car) {
         Point2D distanceTraveled = car.getDirection().multiply(car.getVelocity() * 0.277 * elapsedSeconds);
         return lanesIntersect(
                 car.getPosition(),
@@ -98,7 +98,7 @@ public class CarCounter {
         return t >= 0.0 && t <= 1.0;
     }
 
-    private void addToAverage(List<Car> crossedCar) {
+    private void addToAverage(List<Vehicle> crossedCar) {
         crossedCar.forEach(c -> totalSpeed += c.getSpeed());
         totalCar += crossedCar.size();
     }
