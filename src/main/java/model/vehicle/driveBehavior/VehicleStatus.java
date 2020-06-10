@@ -1,9 +1,9 @@
-package model.car.driveBehavior;
+package model.vehicle.driveBehavior;
 
 import javafx.scene.paint.Color;
-import model.car.Car;
+import model.vehicle.Vehicle;
 
-public enum CarStatus {
+public enum VehicleStatus {
     FREE,
     CLOSING_IN,
     BREAK,
@@ -11,10 +11,10 @@ public enum CarStatus {
     FOLLOW;
 
 
-    public static void setCarColor(Car car) {
+    public static void setCarColor(Vehicle car) {
         switch (car.getDriver().getStatus()) {
             case FREE:
-                car.getView().setFill(Color.GREEN);
+                car.getView().setFill(Color.LIGHTGREEN);
                 break;
             case FOLLOW:
                 car.getView().setFill(Color.BLUE);

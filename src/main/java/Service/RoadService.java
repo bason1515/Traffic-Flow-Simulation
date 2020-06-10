@@ -28,4 +28,8 @@ public class RoadService {
         roadRepo.byId(id).getAllLanes().forEach(r -> roadRepo.remove(r.getRoadId()));
     }
 
+    public void restart () {
+        roadRepo.getAll().forEach(r -> r.getOnRoad().clear());
+    }
+
 }

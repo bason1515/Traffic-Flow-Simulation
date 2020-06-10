@@ -1,10 +1,14 @@
+<?import Controllers.SimulationMenuBar?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<BorderPane fx:controller="Controllers.Controller"
+<BorderPane fx:controller="Controllers.SimulationController"
             xmlns:fx="http://javafx.com/fxml" prefWidth="800" prefHeight="600">
     <top>
-        <Button fx:id="startButton" text="Start"/>
+        <VBox>
+            <SimulationMenuBar fx:id="menuBar"/>
+            <Label fx:id="totalTimeLabel" translateY="5" translateX="10"/>
+        </VBox>
     </top>
     <center>
         <Pane fx:id="sim" prefHeight="800" prefWidth="600"/>
@@ -14,9 +18,9 @@
             <padding>
                 <Insets right="15" top="10"/>
             </padding>
-            <Label GridPane.columnIndex="0" GridPane.rowIndex="0" text="Car/min:"/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="0" text="Vehicle/h:"/>
             <Slider GridPane.columnIndex="1" GridPane.rowIndex="0" fx:id="spawnRateSlider" max="9000" value="3600"
-                    blockIncrement="60"/>
+                    blockIncrement="1"/>
             <Label GridPane.columnIndex="2" GridPane.rowIndex="0" fx:id="spawnRateLabel"/>
 
             <Label GridPane.columnIndex="0" GridPane.rowIndex="1" text="Truck Chance:"/>
@@ -24,14 +28,14 @@
                     blockIncrement="0.01"/>
             <Label GridPane.columnIndex="2" GridPane.rowIndex="1" fx:id="truckChanceLabel"/>
 
-            <Label GridPane.columnIndex="0" GridPane.rowIndex="2" text="Max Acce:"/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="2" text="Max Car Acce:"/>
             <Slider GridPane.columnIndex="1" GridPane.rowIndex="2" fx:id="maxAcceSlider" min="0.2" max="2.0" value="1.0"
                     blockIncrement="0.1"/>
             <Label GridPane.columnIndex="2" GridPane.rowIndex="2" fx:id="maxCarAcceLabel"/>
 
-            <Label GridPane.columnIndex="0" GridPane.rowIndex="3" text="Max Velo:"/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="3" text="Max Car Velo:"/>
             <Slider GridPane.columnIndex="1" GridPane.rowIndex="3" fx:id="maxVeloSlider" min="10" max="140" value="80"
-                    blockIncrement="5"/>
+                    blockIncrement="1"/>
             <Label GridPane.columnIndex="2" GridPane.rowIndex="3" fx:id="maxCarVeloLabel"/>
 
             <Label GridPane.columnIndex="0" GridPane.rowIndex="4" text="Max Truck Acce:"/>
@@ -41,7 +45,7 @@
 
             <Label GridPane.columnIndex="0" GridPane.rowIndex="5" text="Max Truck Velo:"/>
             <Slider GridPane.columnIndex="1" GridPane.rowIndex="5" fx:id="maxTruckVeloSlider" min="10" max="140"
-                    value="80" blockIncrement="5"/>
+                    value="80" blockIncrement="1"/>
             <Label GridPane.columnIndex="2" GridPane.rowIndex="5" fx:id="maxTruckVeloLabel"/>
 
             <Label GridPane.columnIndex="0" GridPane.rowIndex="6" text="Timewarp:"/>
@@ -49,10 +53,12 @@
                     value="6" blockIncrement="1"/>
             <Label GridPane.columnIndex="2" GridPane.rowIndex="6" fx:id="timewarpLabel"/>
 
-            <Label GridPane.columnIndex="0" GridPane.rowIndex="7" text="Ramp Car/min:"/>
-            <Slider GridPane.columnIndex="1" GridPane.rowIndex="7" fx:id="rampSpawnRateSlider" max="3600"
-                    value="900" blockIncrement="60"/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="7" text="Ramp Vehicle/h:"/>
+            <Slider GridPane.columnIndex="1" GridPane.rowIndex="7" fx:id="rampSpawnRateSlider" max="500"
+                    value="200" blockIncrement="1"/>
             <Label GridPane.columnIndex="2" GridPane.rowIndex="7" fx:id="rampSpawnRateLabel"/>
+            <Button fx:id="startButton" GridPane.columnIndex="0" GridPane.rowIndex="8" text="Start"/>
+            <Button fx:id="restartButton" GridPane.columnIndex="1" GridPane.rowIndex="8" text="Restart"/>
 
         </GridPane>
     </right>

@@ -1,10 +1,13 @@
 package model.road;
 
 import javafx.geometry.Point2D;
+import javafx.scene.image.Image;
+import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Line;
 import lombok.Getter;
 import lombok.Setter;
-import model.car.Car;
+import model.vehicle.Vehicle;
+import model.vehicle.changeLaneBehavior.ChangeLaneFactory;
 
 import java.util.*;
 
@@ -15,11 +18,11 @@ public class Road extends Line {
 
     private static Long count = 1L;
     private final Long roadId;
+    private RoadType type;
 
     private Point2D direction;
     private double length;
-    private LinkedList<Car> onRoad;
-    private List<Car> bufferOnRoad;
+    private LinkedList<Vehicle> onRoad;
     private Road left = null;
     private Road right = null;
     private Road next = null;
@@ -30,21 +33,29 @@ public class Road extends Line {
 
     public Road(double startX, double startY, double endX, double endY) {
         super(startX, startY, endX, endY);
+        this.type = RoadType.LANE;
         roadId = count++;
         direction = getEndPoint2D().subtract(getStartPoint2D()).normalize();
         length = getStartPoint2D().distance(getEndPoint2D());
         onRoad = new LinkedList<>();
-        bufferOnRoad = new ArrayList<>();
+        roadImage();
     }
 
-    public void removeOnRoad(Car c) {
+    private void roadImage() {
+        Image roadImage = new Image("file:src/main/resources/Road.png");
+        ImagePattern roadFill = new ImagePattern(roadImage, 5, 0, length, LANE_OFFSET, false);
+        this.setStrokeWidth(9);
+        this.setStroke(roadFill);
+    }
+
+    public void removeOnRoad(Vehicle c) {
         onRoad.remove(c);
     }
 
-    public void addOnRoad(Car car) {
-        ListIterator<Car> iterator = onRoad.listIterator();
+    public void addOnRoad(Vehicle car) {
+        ListIterator<Vehicle> iterator = onRoad.listIterator();
         while (iterator.hasNext()) {
-            Car target = iterator.next();
+            Vehicle target = iterator.next();
             if (!isBehind(car, target)) {
                 iterator.previous();
                 iterator.add(car);
@@ -54,15 +65,16 @@ public class Road extends Line {
         iterator.add(car);
     }
 
-    public void moveCarToThisRoad(Car car){
+    public void moveCarToThisRoad(Vehicle car) {
         car.getCurrentRoad().removeOnRoad(car);
         addOnRoad(car);
         car.setCurrentRoad(this);
         car.setDirection(direction);
-        car.getDriver().getDriveOnRoad().setDrivenRoad(this);
+        car.getDriver().getWiedemann().setDrivenRoad(this);
+        car.getDriver().setChangeLane(ChangeLaneFactory.createChangeLane(car));
     }
 
-    private boolean isBehind(Car source, Car target) {
+    private boolean isBehind(Vehicle source, Vehicle target) {
         if (source.equals(target)) return true;
         Point2D driveVec = direction;
         Point2D vecToTarget = new Point2D(target.getX() - source.getX(), target.getY() - source.getY());
@@ -153,10 +165,6 @@ public class Road extends Line {
     public void setEndPoint2D(Point2D end) {
         setEndX(end.getX());
         setEndY(end.getY());
-    }
-
-    public Point2D getDriveDirection() {
-        return direction;
     }
 
     public Optional<Road> getLeft() {

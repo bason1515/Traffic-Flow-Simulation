@@ -1,57 +1,46 @@
-package model.car.driveBehavior;
+package model.vehicle.driveBehavior;
 
 import javafx.geometry.Point2D;
 import lombok.Setter;
-import model.car.Car;
 import model.road.Road;
+import model.vehicle.Vehicle;
 
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class DriveOnRoad {
+public class Wiedemann {
     private static ThreadLocalRandom rng = ThreadLocalRandom.current();
     @Setter
     private Road drivenRoad;
-    private Car myCar;
-    private Car carInFront;
+    private Vehicle myCar, carInFront;
+    private double deltaX, deltaV;
+    private double l, ax, abx, sdx, sdv, opdv;
 
-    private double deltaX;
-    private double deltaV;
-
-    private static final double nrnd = rng.nextDouble();
-    private double l;
-    private double ax;
-    private double abx;
-    private double sdx;
-    private double sdv;
-    private double cldv;
-    private double opdv;
-
-    public DriveOnRoad(Car myCar) {
+    public Wiedemann(Vehicle myCar) {
         this.myCar = myCar;
         this.drivenRoad = myCar.getCurrentRoad();
     }
 
-    public CarStatus getNewStatus(Car carInFront) {
+    public VehicleStatus getNewStatus(Vehicle carInFront) {
         this.carInFront = carInFront;
         return checkThresholds();
     }
 
-    private CarStatus checkThresholds() {
-        CarStatus newStatus = CarStatus.FREE;
+    private VehicleStatus checkThresholds() {
+        VehicleStatus newStatus = VehicleStatus.FREE;
         if (carInFront != null) {
             calculateParameters();
             if (deltaX < abx) {
-                newStatus = CarStatus.BREAK;
+                newStatus = VehicleStatus.BREAK;
                 if (deltaX <= 0.5) {
-                    newStatus = CarStatus.COLLISION;
+                    newStatus = VehicleStatus.COLLISION;
                 }
             } else if (deltaV > sdv) {
-                newStatus = CarStatus.CLOSING_IN;
+                newStatus = VehicleStatus.CLOSING_IN;
             } else if (deltaV < opdv || deltaX > sdx) {
-                newStatus = CarStatus.FREE;
+                newStatus = VehicleStatus.FREE;
             } else {
-                newStatus = CarStatus.FOLLOW;
+                newStatus = VehicleStatus.FOLLOW;
             }
         }
         return newStatus;
@@ -87,13 +76,11 @@ public class DriveOnRoad {
         double cx = 18 + myCar.getRnd()[2];
         sdv = Math.pow((deltaX - ax) / cx, 2);
 
-        cldv = sdv * 1.1;
-
-        opdv = cldv * -1.2;
+        opdv = sdv * -1.3;
     }
 
     public void drive() {
-        CarStatus status = myCar.getDriver().getStatus();
+        VehicleStatus status = myCar.getDriver().getStatus();
         switch (status) {
             case FREE:
                 freeDrive();
@@ -132,8 +119,8 @@ public class DriveOnRoad {
 
     @Override
     public String toString() {
-        return ax + " |abx| " + abx + " |sdx| " + sdx + " |sdv| " + sdv + " |cldv| " +
-                cldv + " |opdv| " + opdv + "|| dx: " + deltaX + " dv: " + deltaV;
+        return ax + " |abx| " + abx + " |sdx| " + sdx + " |sdv| " + sdv + " |opdv| " +
+                opdv + "|| dx: " + deltaX + " dv: " + deltaV;
     }
 
 }

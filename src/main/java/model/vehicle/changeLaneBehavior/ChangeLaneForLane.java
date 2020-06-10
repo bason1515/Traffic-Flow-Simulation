@@ -1,36 +1,37 @@
-package model.car.driveBehavior;
+package model.vehicle.changeLaneBehavior;
 
 import javafx.geometry.Point2D;
 import lombok.Getter;
-import model.car.Car;
 import model.road.Road;
+import model.vehicle.Vehicle;
+import model.vehicle.driveBehavior.VehicleStatus;
 
-import java.util.Optional;
-
-public class ChangeLane {
+@Getter
+public class ChangeLaneForLane implements ChangeLane {
     private Road target;
-    @Getter
+    private Road lastRoad;
     private Road transition;
-    private Car myCar;
+    private Vehicle myCar;
     private boolean ended = true;
     private GapAcceptanceModel gapModel;
 
-    public ChangeLane(Car myCar) {
+    public ChangeLaneForLane(Vehicle myCar) {
         this.myCar = myCar;
         gapModel = new GapAcceptanceModel(myCar);
     }
 
-    public boolean shouldOvertake() {
-        if (myCar.getDriver().getStatus() == CarStatus.FREE) return false;
+    @Override
+    public boolean shouldChangeToLeft() {
+        if (myCar.getDriver().getStatus() == VehicleStatus.FREE) return false;
         double myMaxV = myCar.getLimits().getMaxVel();
         boolean canGoFaster = myMaxV - myCar.getSpeed() > 1;
-        boolean gap = gapModel.isLeftLineAccepted();
+        boolean gap = gapModel.isLeftLaneAccepted();
         return gap && canGoFaster;
     }
 
+    @Override
     public boolean shouldChangeToRight() {
-        Optional<Road> rightRoad = myCar.getCurrentRoad().getRight();
-        boolean gap = gapModel.isRightLineAccepted();
+        boolean gap = gapModel.isRightLaneAccepted();
         double myMaxV = myCar.getLimits().getMaxVel();
         boolean toSlow = gapModel.getLead().map(lead -> myMaxV - lead.getSpeed() >= 3).orElse(false);
         return gap && !toSlow;
@@ -42,6 +43,7 @@ public class ChangeLane {
         return !isThereACar;
     }
 
+    @Override
     public void initTransition(Road target) {
         this.target = target;
         createTransition();
@@ -56,14 +58,15 @@ public class ChangeLane {
     }
 
     private void changeRoad() {
-        myCar.getCurrentRoad().removeOnRoad(myCar);
+        lastRoad = myCar.getCurrentRoad();
         target.addOnRoad(myCar);
         myCar.setCurrentRoad(target);
         myCar.setDirection(transition.getDirection());
-        myCar.getDriver().getDriveOnRoad().setDrivenRoad(transition);
+        myCar.getDriver().getWiedemann().setDrivenRoad(transition);
         ended = false;
     }
 
+    @Override
     public boolean checkIfEnded() {
         if (ended) return true;
         Point2D transitStartPoint = transition.getStartPoint2D();
@@ -72,10 +75,13 @@ public class ChangeLane {
         return ended;
     }
 
-    private void endTransition() {
+    @Override
+    public void endTransition() {
         myCar.setPosition(transition.getEndPoint2D());
         myCar.setDirection(myCar.getCurrentRoad().getDirection());
-        myCar.getDriver().getDriveOnRoad().setDrivenRoad(myCar.getCurrentRoad());
+        myCar.getDriver().getWiedemann().setDrivenRoad(myCar.getCurrentRoad());
+        myCar.getDriver().setChangeLane(ChangeLaneFactory.createChangeLane(myCar));
+        lastRoad.removeOnRoad(myCar);
         ended = true;
     }
 

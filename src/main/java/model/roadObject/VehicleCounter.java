@@ -6,8 +6,8 @@ import javafx.scene.control.Label;
 import javafx.scene.shape.Line;
 import lombok.Getter;
 import lombok.Setter;
-import model.car.Car;
 import model.road.Road;
+import model.vehicle.Vehicle;
 
 import java.util.Collection;
 import java.util.List;
@@ -15,31 +15,34 @@ import java.util.stream.Collectors;
 
 @Getter
 @Setter
-public class CarCounter {
+public class VehicleCounter {
     private double timeFromLastRefresh;
     private double elapsedSeconds;
     private int refreshSec;
     private int totalCar;
     private int totalSpeed;
     private int throughputPerHour;
+    private int avgSpeed;
     private Point2D start, end;
     private Line line;
     private Label label;
     private Group view;
 
-    public CarCounter(Road road) {
-        refreshSec = 5;
+    public VehicleCounter(Road road, double position) {
+        refreshSec = 15;
         view = new Group();
-        initLane(road);
+        position = Math.min(1.0, position);
+        position = Math.max(0.0, position);
+        initLane(road, position);
         initLabel();
     }
 
-    private void initLane(Road road) {
+    private void initLane(Road road, double position) {
         List<Road> monitoredRoads = road.getAllLanes();
         Road firstRoad = monitoredRoads.get(0);
         Road lastRoad = monitoredRoads.get(monitoredRoads.size() - 1);
-        start = firstRoad.getStartPoint2D().midpoint(firstRoad.getEndPoint2D());
-        end = lastRoad.getStartPoint2D().midpoint(lastRoad.getEndPoint2D());
+        start = firstRoad.getStartPoint2D().add(firstRoad.getDirection().multiply(firstRoad.getLength() * position));
+        end = lastRoad.getStartPoint2D().add(lastRoad.getDirection().multiply(lastRoad.getLength() * position));
         offsetCounterLane();
         line = new Line(start.getX(), start.getY(),
                 end.getX(), end.getY());
@@ -54,14 +57,14 @@ public class CarCounter {
 
     private void initLabel() {
         label = new Label("Car/h: " + 0 + "\nAvg Speed: " + 0);
-        label.setLayoutX(start.getX());
-        label.setLayoutY(start.getY());
+        label.setLayoutX(end.getX() + 25);
+        label.setLayoutY(end.getY() - 25);
         view.getChildren().add(label);
     }
 
-    public void update(Collection<Car> cars, double elapsedSeconds) {
+    public void update(Collection<Vehicle> cars, double elapsedSeconds) {
         this.elapsedSeconds = elapsedSeconds;
-        List<Car> crossedCar = cars.stream().filter(this::isCarCrossingCounter)
+        List<Vehicle> crossedCar = cars.stream().filter(this::isCarCrossingCounter)
                 .collect(Collectors.toList());
         addToAverage(crossedCar);
         timeFromLastRefresh += elapsedSeconds;
@@ -71,7 +74,7 @@ public class CarCounter {
         }
     }
 
-    private boolean isCarCrossingCounter(Car car) {
+    private boolean isCarCrossingCounter(Vehicle car) {
         Point2D distanceTraveled = car.getDirection().multiply(car.getVelocity() * 0.277 * elapsedSeconds);
         return lanesIntersect(
                 car.getPosition(),
@@ -98,18 +101,15 @@ public class CarCounter {
         return t >= 0.0 && t <= 1.0;
     }
 
-    private void addToAverage(List<Car> crossedCar) {
+    private void addToAverage(List<Vehicle> crossedCar) {
         crossedCar.forEach(c -> totalSpeed += c.getSpeed());
         totalCar += crossedCar.size();
     }
 
     private void calculateAverageAndUpdateLabel() {
-        if (totalCar != 0) {
-            int avgSpeed = totalSpeed / totalCar;
-            throughputPerHour = 3600 / refreshSec * totalCar;
-            label.setText("Car/h: " + throughputPerHour + "\nAvg Speed: " + avgSpeed);
-        } else
-            label.setText("Car/h: " + 0 + "\nAvg Speed: " + 0);
+        avgSpeed = totalCar == 0 ? 0 : totalSpeed / totalCar;
+        throughputPerHour = 3600 / refreshSec * totalCar;
+        label.setText("Car/h: " + throughputPerHour + "\nAvg Speed: " + avgSpeed);
     }
 
     public void resetCounter() {
@@ -118,4 +118,8 @@ public class CarCounter {
         totalSpeed = 0;
     }
 
+    public void reset() {
+        resetCounter();
+        calculateAverageAndUpdateLabel();
+    }
 }

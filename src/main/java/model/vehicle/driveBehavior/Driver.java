@@ -1,10 +1,12 @@
-package model.car.driveBehavior;
+package model.vehicle.driveBehavior;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import model.car.Car;
 import model.road.Road;
+import model.vehicle.Vehicle;
+import model.vehicle.changeLaneBehavior.ChangeLane;
+import model.vehicle.changeLaneBehavior.ChangeLaneFactory;
 
 import java.util.Optional;
 
@@ -12,35 +14,38 @@ import java.util.Optional;
 @Setter
 public class Driver {
     @Setter(AccessLevel.NONE)
-    private Car myCar;
-    private Car carInFront;
-    private DriveOnRoad driveOnRoad;
+    private Vehicle myCar;
+    private Vehicle carInFront;
+    private Wiedemann wiedemann;
     private ChangeLane changeLane;
-    private CarStatus status;
-    private CarStatus desStatus;
+    private VehicleStatus status;
+    private VehicleStatus desStatus;
     private double reactionTime;
     private double timeFromNewStatus;
 
-    public Driver(Car myCar) {
+    public Driver(Vehicle myCar) {
         this.myCar = myCar;
-        this.driveOnRoad = new DriveOnRoad(myCar);
-        this.changeLane = new ChangeLane(myCar);
-        this.status = CarStatus.FREE;
+        this.wiedemann = new Wiedemann(myCar);
+        this.changeLane = ChangeLaneFactory.createChangeLane(myCar);
+        this.status = VehicleStatus.FREE;
         reactionTime = 0.5;
         timeFromNewStatus = 0.0;
     }
 
-    public void drive(Car carInFront, double elapsedSeconds) {
+    public void drive(Vehicle carInFront, double elapsedSeconds) {
         this.carInFront = carInFront;
-        checkForLaneChange();
-//        reaction(elapsedSeconds);
-        status = driveOnRoad.getNewStatus(carInFront);
-        driveOnRoad.drive();
-        CarStatus.setCarColor(myCar);
+        changeLaneIfCan();
+        updateDriveStatus();
+        wiedemann.drive();
+    }
+
+    private void updateDriveStatus(){
+        status = wiedemann.getNewStatus(carInFront);
+        VehicleStatus.setCarColor(myCar);
     }
 
     private void reaction(double elapsedSeconds) {
-        desStatus = driveOnRoad.getNewStatus(carInFront);
+        desStatus = wiedemann.getNewStatus(carInFront);
         if (desStatus == status) return;
         timeFromNewStatus += elapsedSeconds;
         if (timeFromNewStatus >= reactionTime) {
@@ -50,13 +55,13 @@ public class Driver {
 
     }
 
-    private void checkForLaneChange() {
+    private void changeLaneIfCan() {
         if (changeLane.checkIfEnded()) {
             Optional<Road> rightRoad = myCar.getCurrentRoad().getRight();
             Optional<Road> leftRoad = myCar.getCurrentRoad().getLeft();
             if (changeLane.shouldChangeToRight()) {
                 rightRoad.ifPresent(changeLane::initTransition);
-            } else if (changeLane.shouldOvertake())
+            } else if (changeLane.shouldChangeToLeft())
                 leftRoad.ifPresent(changeLane::initTransition);
         }
     }

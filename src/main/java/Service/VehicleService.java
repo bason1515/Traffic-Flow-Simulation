@@ -3,10 +3,10 @@ package Service;
 import javafx.scene.shape.Rectangle;
 import lombok.Getter;
 import lombok.Setter;
-import model.car.Car;
 import model.road.Road;
-import repository.CarRepository;
+import model.vehicle.Vehicle;
 import repository.RoadRepository;
+import repository.VehicleRepository;
 
 import java.util.List;
 import java.util.ListIterator;
@@ -15,24 +15,24 @@ import java.util.stream.Stream;
 
 @Getter
 @Setter
-public class CarService {
+public class VehicleService {
 
-    private CarRepository carRepo;
+    private VehicleRepository carRepo;
     private RoadRepository roadRepo;
     private double elapsedSeconds;
 
-    public CarService(CarRepository carRepository, RoadRepository roadRepository) {
-        this.carRepo = carRepository;
+    public VehicleService(VehicleRepository vehicleRepository, RoadRepository roadRepository) {
+        this.carRepo = vehicleRepository;
         this.roadRepo = roadRepository;
     }
 
-    public void addCar(Car car) {
+    public void addCar(Vehicle car) {
         car.getCurrentRoad().addOnRoad(car);
         carRepo.save(car);
     }
 
     public List<Rectangle> getAllCarsView() {
-        return carRepo.getAll().stream().map(Car::getView).collect(Collectors.toList());
+        return carRepo.getAll().stream().map(Vehicle::getView).collect(Collectors.toList());
     }
 
     public void updateCars(double elapsedTime) {
@@ -46,29 +46,31 @@ public class CarService {
     private void driveCarsOnRoad(Road road) {
         updateCarsInFront(road);
         for (int i = 0; i < road.getOnRoad().size(); i++) {
-            road.getOnRoad().get(i).performDrive(elapsedSeconds);
+            Vehicle currentCar = road.getOnRoad().get(i);
+            if(currentCar.getCurrentRoad().equals(road)) // Avoid double updating car while changing lane
+                currentCar.performDrive(elapsedSeconds);
         }
     }
 
     private void updateCarsInFront(Road road) {
-        ListIterator<Car> carIterable = road.getOnRoad().listIterator();
+        ListIterator<Vehicle> carIterable = road.getOnRoad().listIterator();
         if (!carIterable.hasNext()) return;
-        Car currentCar = carIterable.next();
+        Vehicle currentCar = carIterable.next();
         while (carIterable.hasNext()) {
-            Car carInFront = carIterable.next();
+            Vehicle carInFront = carIterable.next();
             currentCar.setCarInFront(carInFront);
             currentCar = carInFront;
         }
-        Car caronNextRoad = currentCar.getCurrentRoad().getNext()
-                .map(road1 -> road1.getOnRoad().getFirst())
+        Vehicle carOnNextRoad = currentCar.getCurrentRoad().getNext()
+                .map(road1 -> road1.getOnRoad().peekFirst())
                 .orElse(null);
-        currentCar.setCarInFront(caronNextRoad);
+        currentCar.setCarInFront(carOnNextRoad);
     }
 
     private void applyRoadBorder() {
         for (Road road : roadRepo.getAll()) {
             if (!road.getOnRoad().isEmpty()) {
-                Car car = road.getOnRoad().getLast();
+                Vehicle car = road.getOnRoad().getLast();
                 double distToRoadStart = road.getStartPoint2D().distance(car.getPosition());
                 if (distToRoadStart >= road.getLength()) {
                     road.getNext().ifPresent(next -> next.moveCarToThisRoad(car));
@@ -79,9 +81,15 @@ public class CarService {
         }
     }
 
-    private void deleteCar(Car car) {
+    private void deleteCar(Vehicle car) {
+        if (!car.getDriver().getChangeLane().checkIfEnded())
+            car.getDriver().getChangeLane().endTransition();
         car.getCurrentRoad().removeOnRoad(car);
         carRepo.remove(car.getCarId());
+    }
+
+    public void restart() {
+        carRepo.removeAll();
     }
 
 }

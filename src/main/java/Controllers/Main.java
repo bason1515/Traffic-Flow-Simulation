@@ -1,6 +1,5 @@
-package sample;
+package Controllers;
 
-import Controllers.Controller;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -14,12 +13,12 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/sample.fxml"));
         Parent root = loader.load();
-        Controller controller = loader.getController();
-        primaryStage.setTitle("Hello World");
+        SimulationController simulationController = loader.getController();
+        primaryStage.setTitle("Traffic Simulation");
         primaryStage.setScene(new Scene(root, 1000, 1000));
         primaryStage.show();
         primaryStage.setOnHidden(e -> {
-            controller.shutdown();
+            simulationController.shutdown();
             Platform.exit();
         });
     }
