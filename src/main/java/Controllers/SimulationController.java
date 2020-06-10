@@ -1,12 +1,12 @@
 package Controllers;
 
+import Controllers.event.RestartEvent;
 import Controllers.event.StartStopEvent;
-import Service.VehicleService;
-import Service.DataSaver;
-import Service.RoadObjectService;
-import Service.RoadService;
+import Service.*;
 import javafx.animation.AnimationTimer;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.LongProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
@@ -14,47 +14,54 @@ import javafx.geometry.Point2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Pane;
-import model.vehicle.Vehicle;
-import model.vehicle.Limitation;
-import model.vehicle.Obstacle;
+import javafx.scene.paint.Color;
+import lombok.Getter;
 import model.road.Road;
 import model.road.RoadType;
 import model.roadObject.VehicleSpawner;
-import repository.VehicleRepository;
-import repository.VehicleRepositoryImpl;
+import model.vehicle.Limitation;
+import model.vehicle.Obstacle;
+import model.vehicle.Vehicle;
 import repository.RoadRepository;
 import repository.RoadRepositoryImpl;
+import repository.VehicleRepository;
+import repository.VehicleRepositoryImpl;
 
 import java.text.DecimalFormat;
 import java.util.List;
-import java.util.Timer;
 import java.util.stream.Collectors;
 
-public class Controller {
+@Getter
+public class SimulationController {
     private static final int LANE_NUMBER = 1;
 
     @FXML
     private Pane sim;
     @FXML
-    private Button startButton;
+    private Button startButton, restartButton;
     @FXML
     private Slider spawnRateSlider, truckChanceSlider, maxAcceSlider, maxVeloSlider,
             maxTruckAcceSlider, maxTruckVeloSlider, timewarpSlider, rampSpawnRateSlider;
     @FXML
     private Label spawnRateLabel, truckChanceLabel, maxCarAcceLabel, maxCarVeloLabel,
-            maxTruckAcceLabel, maxTruckVeloLabel, timewarpLabel, rampSpawnRateLabel;
+            maxTruckAcceLabel, maxTruckVeloLabel, timewarpLabel, rampSpawnRateLabel,
+            totalTimeLabel;
+    @FXML
+    private SimulationMenuBar menuBar;
 
+    private DoubleProperty simTotalSec;
     private VehicleService vehicleService;
     private RoadService roadService;
     private RoadObjectService roadObjectService;
-    private Timer timer;
+    private DataSaver dataSaver;
+    private Badania badania;
 
     AnimationTimer simulationTimer;
 
     public void shutdown() {
-        if (timer != null)
-            timer.cancel();
     }
 
     @FXML
@@ -79,6 +86,16 @@ public class Controller {
             }
         });
         startButton.setOnAction(new StartStopEvent(startButton, this));
+        restartButton.setOnAction(new RestartEvent(restartButton, this));
+        initSimTimeLabel();
+        dataSaver = new DataSaver(this);
+        menuBar.setDataSaver(dataSaver);
+    }
+
+    private void initSimTimeLabel() {
+        simTotalSec = new SimpleDoubleProperty(this, "simTotalSec", 0.0);
+        totalTimeLabel.setBackground(new Background(new BackgroundFill(Color.LIGHTGREY, null, null)));
+        totalTimeLabel.textProperty().bind(simTotalSec.asString("Sim time: %.2f s"));
     }
 
     private void roadsInit() {
@@ -108,7 +125,7 @@ public class Controller {
     private void createObstacleAtEnd(Road ramp) {
         Point2D position = ramp.getEndPoint2D().subtract(ramp.getDirection());
         Obstacle obstacle = new Obstacle(position,
-                new Limitation(0, 0, 0), 5, 5, ramp);
+                new Limitation(0.0, 0.0, 0.0), 5, 5, ramp);
         ramp.addOnRoad(obstacle);
     }
 
@@ -129,7 +146,8 @@ public class Controller {
 
     private void roadObjectsInit() {
         Road road = roadService.getRoadRepo().byId(1L);
-        roadObjectService.createCarCounter(road);
+        roadObjectService.createCarCounter(road, 0.28);
+        roadObjectService.createCarCounter(road, 0.79);
         roadObjectService.createVehicleSpawner(roadService.getRoadRepo().byId(1L));
         addSpawnerGui();
         sim.getChildren().addAll(roadObjectService.getAllViews());
@@ -206,6 +224,7 @@ public class Controller {
                 if (lastUpdateTime.get() > 0) {
                     long elapsedTime = timestamp - lastUpdateTime.get();
                     elapsedTime *= timewarpSlider.getValue();
+                    increaseSimTime(elapsedTime);
                     roadObjectService.updateRoadObjects(elapsedTime);
                     vehicleService.updateCars(elapsedTime);
                 }
@@ -213,14 +232,15 @@ public class Controller {
             }
         };
         simulationTimer.start();
-        DataSaver task = new DataSaver(spawnRateSlider.valueProperty(), roadObjectService.getVehicleCounter().get(0));
-        timer = new Timer("Data Save");
-        timer.scheduleAtFixedRate(task, 5000L, 5000L);
+    }
+
+    private void increaseSimTime(long elapsedTime) {
+        double elapsedTimeSec = elapsedTime / 1_000_000_000.0;
+        simTotalSec.setValue(simTotalSec.getValue() + elapsedTimeSec);
     }
 
     public void stopAnimation() {
         simulationTimer.stop();
-        timer.cancel();
     }
 
     private void addMouseScroll() {
@@ -233,5 +253,16 @@ public class Controller {
             sim.setScaleX(sim.getScaleX() * zoomFactor);
             sim.setScaleY(sim.getScaleY() * zoomFactor);
         });
+    }
+
+    public void restart() {
+        vehicleService.restart();
+        roadService.restart();
+        roadService.getRoadRepo().getAll().stream()
+                .filter(r -> r.getType() == RoadType.RAMP)
+                .forEach(this::createObstacleAtEnd);
+        roadObjectService.restart();
+        simTotalSec.setValue(0.0);
+        dataSaver.clearData();
     }
 }

@@ -3,10 +3,10 @@ package Service;
 import javafx.scene.shape.Rectangle;
 import lombok.Getter;
 import lombok.Setter;
-import model.vehicle.Vehicle;
 import model.road.Road;
-import repository.VehicleRepository;
+import model.vehicle.Vehicle;
 import repository.RoadRepository;
+import repository.VehicleRepository;
 
 import java.util.List;
 import java.util.ListIterator;
@@ -46,7 +46,9 @@ public class VehicleService {
     private void driveCarsOnRoad(Road road) {
         updateCarsInFront(road);
         for (int i = 0; i < road.getOnRoad().size(); i++) {
-            road.getOnRoad().get(i).performDrive(elapsedSeconds);
+            Vehicle currentCar = road.getOnRoad().get(i);
+            if(currentCar.getCurrentRoad().equals(road)) // Avoid double updating car while changing lane
+                currentCar.performDrive(elapsedSeconds);
         }
     }
 
@@ -80,8 +82,14 @@ public class VehicleService {
     }
 
     private void deleteCar(Vehicle car) {
+        if (!car.getDriver().getChangeLane().checkIfEnded())
+            car.getDriver().getChangeLane().endTransition();
         car.getCurrentRoad().removeOnRoad(car);
         carRepo.remove(car.getCarId());
+    }
+
+    public void restart() {
+        carRepo.removeAll();
     }
 
 }

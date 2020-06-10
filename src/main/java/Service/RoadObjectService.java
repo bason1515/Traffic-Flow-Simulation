@@ -25,8 +25,8 @@ public class RoadObjectService {
         this.spawner = new ArrayList<>();
     }
 
-    public void createCarCounter(Road road) {
-        vehicleCounter.add(new VehicleCounter(road));
+    public void createCarCounter(Road road, double position) {
+        vehicleCounter.add(new VehicleCounter(road, position));
     }
 
     public VehicleSpawner createVehicleSpawner(Road road) {
@@ -44,5 +44,10 @@ public class RoadObjectService {
 
     public List<Group> getAllViews() {
         return vehicleCounter.stream().map(VehicleCounter::getView).collect(Collectors.toList());
+    }
+
+    public void restart() {
+        vehicleCounter.forEach(VehicleCounter::reset);
+        spawner.forEach(s -> s.setTotalSpawnedVehicles(0));
     }
 }

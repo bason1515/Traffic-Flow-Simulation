@@ -13,6 +13,8 @@ public interface VehicleRepository {
 
     void remove(Long id);
 
+    void removeAll();
+
     Collection<Vehicle> getAll();
 
     Vehicle byId(Long id);

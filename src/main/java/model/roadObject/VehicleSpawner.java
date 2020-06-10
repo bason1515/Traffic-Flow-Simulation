@@ -4,10 +4,10 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
 import lombok.Getter;
 import lombok.Setter;
+import model.road.Road;
+import model.vehicle.Limitation;
 import model.vehicle.Vehicle;
 import model.vehicle.VehicleType;
-import model.vehicle.Limitation;
-import model.road.Road;
 import repository.VehicleRepository;
 
 import java.util.ArrayList;
@@ -28,6 +28,9 @@ public class VehicleSpawner {
     private ReadOnlyDoubleWrapper spawnRate;
     private DoubleProperty truckChance;
     private double lastSpawnTimeInSec;
+    @Getter
+    @Setter
+    private int totalSpawnedVehicles;
 
     public VehicleSpawner(VehicleRepository vehicleRepository) {
         this.carRepo = vehicleRepository;
@@ -59,7 +62,10 @@ public class VehicleSpawner {
 
     private void spawnVehicle() {
         Optional<Road> freeRoad = findFreeRoad();
-        freeRoad.ifPresent(this::createVehicleOnRoad);
+        freeRoad.ifPresent(road -> {
+            createVehicleOnRoad(road);
+            totalSpawnedVehicles++;
+        });
     }
 
     private Optional<Road> findFreeRoad() {

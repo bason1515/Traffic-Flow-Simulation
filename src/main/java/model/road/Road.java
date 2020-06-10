@@ -1,6 +1,8 @@
 package model.road;
 
 import javafx.geometry.Point2D;
+import javafx.scene.image.Image;
+import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Line;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,7 +23,6 @@ public class Road extends Line {
     private Point2D direction;
     private double length;
     private LinkedList<Vehicle> onRoad;
-    private List<Vehicle> bufferOnRoad;
     private Road left = null;
     private Road right = null;
     private Road next = null;
@@ -37,7 +38,14 @@ public class Road extends Line {
         direction = getEndPoint2D().subtract(getStartPoint2D()).normalize();
         length = getStartPoint2D().distance(getEndPoint2D());
         onRoad = new LinkedList<>();
-        bufferOnRoad = new ArrayList<>();
+        roadImage();
+    }
+
+    private void roadImage() {
+        Image roadImage = new Image("file:src/main/resources/Road.png");
+        ImagePattern roadFill = new ImagePattern(roadImage, 5, 0, length, LANE_OFFSET, false);
+        this.setStrokeWidth(9);
+        this.setStroke(roadFill);
     }
 
     public void removeOnRoad(Vehicle c) {
@@ -57,13 +65,13 @@ public class Road extends Line {
         iterator.add(car);
     }
 
-    public void moveCarToThisRoad(Vehicle car){
+    public void moveCarToThisRoad(Vehicle car) {
         car.getCurrentRoad().removeOnRoad(car);
         addOnRoad(car);
         car.setCurrentRoad(this);
         car.setDirection(direction);
-        car.getDriver().getDriveOnRoad().setDrivenRoad(this);
-        car.getDriver().setChangeLane(ChangeLaneFactory.getChangeLane(car));
+        car.getDriver().getWiedemann().setDrivenRoad(this);
+        car.getDriver().setChangeLane(ChangeLaneFactory.createChangeLane(car));
     }
 
     private boolean isBehind(Vehicle source, Vehicle target) {
@@ -157,10 +165,6 @@ public class Road extends Line {
     public void setEndPoint2D(Point2D end) {
         setEndX(end.getX());
         setEndY(end.getY());
-    }
-
-    public Point2D getDriveDirection() {
-        return direction;
     }
 
     public Optional<Road> getLeft() {

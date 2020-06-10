@@ -28,6 +28,11 @@ public class VehicleRepositoryImpl implements VehicleRepository {
     }
 
     @Override
+    public void removeAll() {
+        cars.clear();
+    }
+
+    @Override
     public Collection<Vehicle> getAll() {
         return cars.values();
     }

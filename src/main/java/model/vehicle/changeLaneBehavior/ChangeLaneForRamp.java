@@ -9,12 +9,13 @@ public class ChangeLaneForRamp extends ChangeLaneForLane implements ChangeLane {
     }
 
     @Override
-    public boolean shouldOvertake() {
-        boolean gap = getGapModel().isLeftLineAccepted();
-        double distanceToLead = getGapModel().getLag()
-                .map(lead -> lead.getPosition().distance(getMyCar().getPosition()))
+    public boolean shouldChangeToLeft() {
+        boolean gap = getGapModel().isLeftLaneAccepted();
+        double distanceToLead = getGapModel().getLead()
+                .map(lead -> lead.getPosition().distance(getMyCar().getPosition()) -
+                        (getMyCar().getHeight() / 2 + lead.getHeight() / 2))
                 .orElse(100.0);
-        boolean justBehindLead = distanceToLead < 20 && distanceToLead > 15;
+        boolean justBehindLead = distanceToLead < 15 && distanceToLead > 10;
         return justBehindLead || gap;
     }
 

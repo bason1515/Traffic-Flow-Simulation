@@ -3,8 +3,8 @@ package model.vehicle.changeLaneBehavior;
 import javafx.geometry.Point2D;
 import lombok.Getter;
 import lombok.Setter;
-import model.vehicle.Vehicle;
 import model.road.Road;
+import model.vehicle.Vehicle;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -25,14 +25,14 @@ public class GapAcceptanceModel {
         minLeadGap = 25;
     }
 
-    public boolean isLeftLineAccepted() {
+    public boolean isLeftLaneAccepted() {
         leadAccept = false;
         lagAccept = false;
         me.getCurrentRoad().getLeft().ifPresent(this::acceptance);
         return leadAccept && lagAccept;
     }
 
-    public boolean isRightLineAccepted() {
+    public boolean isRightLaneAccepted() {
         leadAccept = false;
         lagAccept = false;
         me.getCurrentRoad().getRight().ifPresent(this::acceptance);
@@ -100,7 +100,7 @@ public class GapAcceptanceModel {
         Point2D myPosition = me.getPosition();
         Point2D myDirection = me.getDirection();
         return target.getOnRoad().stream()
-                .filter(car -> myPosition.subtract(car.getPosition()).angle(myDirection) >= 90.0)
+                .filter(car -> car.getPosition().subtract(myPosition).angle(myDirection) <= 90.0)
                 .min((o1, o2) -> (int) (o1.getPosition().distance(myPosition) - o2.getPosition().distance(myPosition)));
     }
 
@@ -108,12 +108,12 @@ public class GapAcceptanceModel {
         Point2D myPosition = me.getPosition();
         Point2D myDirection = me.getDirection();
         return target.getOnRoad().stream()
-                .filter(car -> myPosition.subtract(car.getPosition()).angle(myDirection) < 90.0)
-                .filter(car -> myPosition.distance(car.getPosition()) < car.getSpeed() * 2)
+                .filter(car -> car.getPosition().subtract(myPosition).angle(myDirection) > 90.0)
+                //.filter(car -> myPosition.distance(car.getPosition()) < car.getSpeed() * 2)
                 .min((o1, o2) -> (int) (o1.getPosition().distance(myPosition) - o2.getPosition().distance(myPosition)));
     }
 
-    private double myAndHisBumper(Vehicle car) {
+    public double myAndHisBumper(Vehicle car) {
         return me.getHeight() / 2 + car.getHeight() / 2;
     }
 

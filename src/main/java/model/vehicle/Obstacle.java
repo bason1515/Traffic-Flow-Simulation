@@ -7,6 +7,7 @@ public class Obstacle extends Vehicle {
 
     public Obstacle(Point2D position, Limitation carLimits, double width, double height, Road currentRoad) {
         super(position, carLimits, width, height, currentRoad);
+        setType(VehicleType.OBSTACLE);
     }
 
     @Override

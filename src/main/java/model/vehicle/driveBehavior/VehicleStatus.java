@@ -14,7 +14,7 @@ public enum VehicleStatus {
     public static void setCarColor(Vehicle car) {
         switch (car.getDriver().getStatus()) {
             case FREE:
-                car.getView().setFill(Color.GREEN);
+                car.getView().setFill(Color.LIGHTGREEN);
                 break;
             case FOLLOW:
                 car.getView().setFill(Color.BLUE);
