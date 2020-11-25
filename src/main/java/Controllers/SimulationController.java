@@ -2,7 +2,10 @@ package Controllers;
 
 import Controllers.event.RestartEvent;
 import Controllers.event.StartStopEvent;
-import Service.*;
+import Service.DataSaver;
+import Service.RoadObjectService;
+import Service.RoadService;
+import Service.VehicleService;
 import javafx.animation.AnimationTimer;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.LongProperty;
@@ -57,7 +60,6 @@ public class SimulationController {
     private RoadService roadService;
     private RoadObjectService roadObjectService;
     private DataSaver dataSaver;
-    private Badania badania;
 
     AnimationTimer simulationTimer;
 
